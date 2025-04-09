@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
 
-const ProductsSection = () => {
+const ProductsSection = ({ deliveryLogoUrl }: { deliveryLogoUrl?: string }) => {
   return (
     <section id="produtos" className="py-20">
       <div className="container mx-auto px-4">
