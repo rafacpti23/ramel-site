@@ -69,11 +69,15 @@ const SupportPage = () => {
     setSubmitting(true);
     
     try {
+      if (!user) {
+        throw new Error("Usuário não autenticado");
+      }
+      
       const { data, error } = await supabase
         .from('support_tickets')
         .insert([
           {
-            user_id: user?.id,
+            user_id: user.id,
             title: newTicketTitle,
             description: newTicketDescription,
           }
@@ -87,7 +91,7 @@ const SupportPage = () => {
         description: "Seu ticket foi enviado e será respondido em breve.",
       });
       
-      setTickets([...(data || []), ...tickets]);
+      setTickets([...(data as Ticket[] || []), ...tickets]);
       setShowNewTicketForm(false);
       setNewTicketTitle("");
       setNewTicketDescription("");
