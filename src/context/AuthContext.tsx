@@ -87,7 +87,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       setUserProfile(profile);
       setIsAdmin(profile?.is_admin || false);
-      setIsPaid(profile?.payment_status === 'aprovado');
+      
+      // Administradores sempre têm acesso, independente do pagamento
+      if (profile?.is_admin) {
+        setIsPaid(true);
+      } else {
+        setIsPaid(profile?.payment_status === 'aprovado');
+      }
     } catch (error) {
       console.error('Erro ao buscar perfil:', error);
       setUserProfile(null);

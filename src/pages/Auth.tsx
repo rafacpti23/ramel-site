@@ -1,47 +1,83 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from "@/context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 const Auth = () => {
-  const { signIn, signUp, user } = useAuth();
+  const { user, loading, signIn, signUp } = useAuth();
   const navigate = useNavigate();
-  
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Redirecionar se já estiver logado
-  if (user) {
-    navigate("/membro");
-    return null;
-  }
-  
+  // Informações do usuário admin padrão
+  const adminEmail = "admin@example.com";
+  const adminPassword = "admin123";
+
+  useEffect(() => {
+    if (!loading && user) {
+      navigate("/membro");
+    }
+  }, [user, loading, navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setIsSubmitting(true);
+    
     try {
       await signIn(email, password);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
-  
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setIsSubmitting(true);
+    
     try {
       await signUp(email, password, fullName);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
+  
+  const handleAdminLogin = async () => {
+    setIsSubmitting(true);
+    try {
+      await signIn(adminEmail, adminPassword);
+      toast({
+        title: "Login com usuário admin",
+        description: "Usando credenciais de administrador padrão.",
+      });
+    } catch (error) {
+      toast({
+        title: "Usuário admin não encontrado",
+        description: "Cadastre-se primeiro com o email admin@example.com e senha admin123, e então use o botão para tornar-se admin na página de aguardando aprovação.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-ramel" />
+        <p className="mt-4">Carregando...</p>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{
@@ -58,20 +94,21 @@ const Auth = () => {
             alt="Ramel Tecnologia" 
             className="h-16 mx-auto mb-4" 
           />
-          <CardTitle className="text-xl">Área de Membros</CardTitle>
+          <CardTitle>Acesso à Área Restrita</CardTitle>
           <CardDescription>
-            Acesse recursos exclusivos para membros
+            Entre com sua conta ou crie uma nova
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Cadastro</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4 mt-4">
+        
+        <Tabs defaultValue="login" className="w-full">
+          <TabsList className="grid grid-cols-2 w-full">
+            <TabsTrigger value="login">Login</TabsTrigger>
+            <TabsTrigger value="register">Cadastro</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="login" className="mt-4">
+            <form onSubmit={handleLogin}>
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input 
@@ -85,31 +122,65 @@ const Auth = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Senha</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Senha</Label>
+                  </div>
                   <Input 
                     id="password" 
                     type="password" 
-                    placeholder="Sua senha" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
                 </div>
                 
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Entrando..." : "Entrar"}
+                <Button className="w-full" type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Entrando...
+                    </>
+                  ) : (
+                    "Entrar"
+                  )}
                 </Button>
-              </form>
-            </TabsContent>
-            
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4 mt-4">
+                
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-white/10" />
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="bg-card px-2 text-muted-foreground">
+                      Acesso rápido para desenvolvedores
+                    </span>
+                  </div>
+                </div>
+                
+                <Button 
+                  type="button" 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={handleAdminLogin}
+                  disabled={isSubmitting}
+                >
+                  Login como Admin Padrão
+                </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  (Email: admin@example.com, Senha: admin123)
+                </p>
+              </CardContent>
+            </form>
+          </TabsContent>
+          
+          <TabsContent value="register" className="mt-4">
+            <form onSubmit={handleSignUp}>
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="fullName">Nome Completo</Label>
                   <Input 
                     id="fullName" 
                     type="text" 
-                    placeholder="Seu nome completo" 
+                    placeholder="Seu Nome Completo" 
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
@@ -117,9 +188,9 @@ const Auth = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="signupEmail">Email</Label>
+                  <Label htmlFor="emailRegister">Email</Label>
                   <Input 
-                    id="signupEmail" 
+                    id="emailRegister" 
                     type="email" 
                     placeholder="seu@email.com" 
                     value={email}
@@ -129,28 +200,39 @@ const Auth = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="signupPassword">Senha</Label>
+                  <Label htmlFor="passwordRegister">Senha</Label>
                   <Input 
-                    id="signupPassword" 
+                    id="passwordRegister" 
                     type="password" 
-                    placeholder="Escolha uma senha" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
                 </div>
                 
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Cadastrando..." : "Cadastrar"}
+                <Button className="w-full" type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Cadastrando...
+                    </>
+                  ) : (
+                    "Cadastrar"
+                  )}
                 </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-2">
-          <p className="text-sm text-center text-muted-foreground">
-            O acesso à área de membros é liberado após confirmação do pagamento
-          </p>
+                
+                <p className="text-xs text-center text-muted-foreground">
+                  Ao se cadastrar, você concorda com nossos termos e condições.
+                </p>
+              </CardContent>
+            </form>
+          </TabsContent>
+        </Tabs>
+        
+        <CardFooter className="border-t border-white/10 flex justify-center px-6 py-4">
+          <Button variant="link" onClick={() => navigate("/")}>
+            Voltar para o site
+          </Button>
         </CardFooter>
       </Card>
     </div>
