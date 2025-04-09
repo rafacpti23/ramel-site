@@ -10,8 +10,11 @@ const Navbar = () => {
     <header className="fixed w-full top-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5">
       <div className="container mx-auto flex justify-between items-center py-4">
         <div className="flex items-center gap-2">
-          <Zap className="h-6 w-6 text-ramel" />
-          <span className="text-xl font-bold">Ramel Tecnologia</span>
+          <img 
+            src="/lovable-uploads/ce5802ea-5404-48ed-ac8f-7ad335ff753c.png" 
+            alt="Ramel Tecnologia" 
+            className="h-12 w-auto" 
+          />
         </div>
         
         {/* Mobile menu button */}
