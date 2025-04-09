@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -9,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { AdminRegistrationInfo } from "@/components/AdminRegistrationInfo";
 
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
@@ -20,8 +20,8 @@ const Auth = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Informações do usuário admin padrão
-  const adminEmail = "admin@example.com";
-  const adminPassword = "admin123";
+  const adminEmail = "admin@admin.com";
+  const adminPassword = "123456";
 
   useEffect(() => {
     if (!loading && user) {
@@ -62,7 +62,7 @@ const Auth = () => {
     } catch (error) {
       toast({
         title: "Usuário admin não encontrado",
-        description: "Cadastre-se primeiro com o email admin@example.com e senha admin123, e então use o botão para tornar-se admin na página de aguardando aprovação.",
+        description: "O usuário admin@admin.com ainda não foi criado. Entre em contato com o administrador do sistema.",
         variant: "destructive",
       });
     } finally {
@@ -80,14 +80,14 @@ const Auth = () => {
   }
   
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{
+    <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{
       backgroundImage: "url('/images/bg-pattern.png')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
       backgroundAttachment: "fixed"
     }}>
-      <Card className="w-full max-w-md glass-card">
+      <Card className="w-full max-w-md glass-card mb-6">
         <CardHeader className="text-center">
           <img 
             src="/lovable-uploads/ce5802ea-5404-48ed-ac8f-7ad335ff753c.png" 
@@ -166,7 +166,7 @@ const Auth = () => {
                   Login como Admin Padrão
                 </Button>
                 <p className="text-xs text-center text-muted-foreground">
-                  (Email: admin@example.com, Senha: admin123)
+                  (Email: admin@admin.com, Senha: 123456)
                 </p>
               </CardContent>
             </form>
@@ -235,6 +235,8 @@ const Auth = () => {
           </Button>
         </CardFooter>
       </Card>
+      
+      <AdminRegistrationInfo />
     </div>
   );
 };
