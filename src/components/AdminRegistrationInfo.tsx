@@ -22,9 +22,20 @@ export const AdminRegistrationInfo = () => {
       
       // Se o usuário admin já existe, não precisamos criá-lo
       if (existingUsers && existingUsers.length > 0) {
+        // Update the existing admin user to ensure proper access
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ 
+            is_admin: true,
+            payment_status: 'aprovado' 
+          })
+          .eq('email', 'admin@admin.com');
+          
+        if (updateError) throw updateError;
+        
         toast({
-          title: "Usuário admin já existe",
-          description: "O usuário admin@admin.com já está cadastrado no sistema."
+          title: "Usuário admin já existe e foi atualizado",
+          description: "O usuário admin@admin.com já está cadastrado e agora tem acesso completo."
         });
         return;
       }
@@ -43,12 +54,14 @@ export const AdminRegistrationInfo = () => {
       if (authError) throw authError;
       
       if (authData.user) {
-        // Atualiza o perfil do usuário para administrador
+        // Atualiza o perfil do usuário para administrador com status aprovado
         const { error: profileError } = await supabase
           .from('profiles')
           .update({ 
             is_admin: true,
-            payment_status: 'aprovado' 
+            payment_status: 'aprovado',
+            email: 'admin@admin.com',
+            full_name: 'Administrador'
           })
           .eq('id', authData.user.id);
           

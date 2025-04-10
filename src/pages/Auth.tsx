@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -26,6 +25,9 @@ const Auth = () => {
 
   useEffect(() => {
     if (!loading && user) {
+      // Adicionado log para debug
+      console.log("Auth page effect - User:", user.email, "isPaid:", isPaid);
+      
       if (isPaid) {
         navigate("/membro");
       } else {
@@ -61,6 +63,7 @@ const Auth = () => {
   const handleAdminLogin = async () => {
     setIsSubmitting(true);
     try {
+      console.log("Tentando login como admin");
       await signIn(adminEmail, adminPassword);
       toast({
         title: "Login com usuário admin",
@@ -68,9 +71,10 @@ const Auth = () => {
       });
       // A navegação é feita no useEffect após a atualização do estado
     } catch (error) {
+      console.error("Erro no login admin:", error);
       toast({
         title: "Usuário admin não encontrado",
-        description: "O usuário admin@admin.com ainda não foi criado. Entre em contato com o administrador do sistema.",
+        description: "O usuário admin@admin.com ainda não foi criado. Use o botão abaixo para criar.",
         variant: "destructive",
       });
     } finally {

@@ -32,6 +32,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Primeiro configuramos o listener de auth state change
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
+        console.log("Auth state changed:", event, newSession?.user?.email);
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
@@ -53,6 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const initAuth = async () => {
       setLoading(true);
       const { data: { session: currentSession } } = await supabase.auth.getSession();
+      console.log("Current session:", currentSession?.user?.email);
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       
@@ -72,6 +74,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      console.log("Fetching profile for user ID:", userId);
+      
+      // Especial handling for admin@admin.com
+      // First check if this is the admin email
+      const isAdminEmail = user?.email === 'admin@admin.com';
+      
+      // Get the profile from the database
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -80,6 +89,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) {
         console.error('Erro ao buscar perfil:', error);
+        
+        // If this is admin@admin.com and we couldn't find the profile, let's create it
+        if (isAdminEmail) {
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .insert({
+              id: userId,
+              email: 'admin@admin.com',
+              full_name: 'Administrador',
+              is_admin: true,
+              payment_status: 'aprovado'
+            });
+            
+          if (!updateError) {
+            // Successfully created admin profile
+            setUserProfile({
+              id: userId,
+              email: 'admin@admin.com',
+              full_name: 'Administrador',
+              is_admin: true,
+              payment_status: 'aprovado'
+            });
+            setIsAdmin(true);
+            setIsPaid(true);
+            setLoading(false);
+            return;
+          }
+        }
+        
         setUserProfile(null);
         setIsAdmin(false);
         setIsPaid(false);
@@ -87,14 +125,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
+      console.log("Profile data:", profile);
       setUserProfile(profile);
-      setIsAdmin(profile?.is_admin || false);
       
-      // Administradores sempre têm acesso, independente do pagamento
-      if (profile?.is_admin) {
+      // Se o email é admin@admin.com, forçar status de admin e pagamento aprovado
+      if (isAdminEmail) {
+        setIsAdmin(true);
         setIsPaid(true);
+        
+        // Se por algum motivo o banco de dados não está consistente, vamos corrigir
+        if (!profile.is_admin || profile.payment_status !== 'aprovado') {
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ 
+              is_admin: true,
+              payment_status: 'aprovado' 
+            })
+            .eq('id', userId);
+            
+          if (updateError) {
+            console.error('Erro ao atualizar perfil do admin:', updateError);
+          }
+        }
       } else {
-        setIsPaid(profile?.payment_status === 'aprovado');
+        // Para usuários normais, usar os dados do perfil
+        setIsAdmin(profile?.is_admin || false);
+        
+        // Administradores sempre têm acesso, independente do pagamento
+        if (profile?.is_admin) {
+          setIsPaid(true);
+        } else {
+          setIsPaid(profile?.payment_status === 'aprovado');
+        }
       }
       
       setLoading(false);
