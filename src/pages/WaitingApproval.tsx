@@ -1,14 +1,16 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { AdminRegistrationInfo } from "@/components/AdminRegistrationInfo";
 
 const WaitingApproval = () => {
   const { user, isPaid, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const [showAdminInfo, setShowAdminInfo] = useState(false);
   
   useEffect(() => {
     if (!loading) {
@@ -30,7 +32,7 @@ const WaitingApproval = () => {
   }
   
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{
+    <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{
       backgroundImage: "url('/images/bg-pattern.png')",
       backgroundSize: "cover",
       backgroundPosition: "center",
@@ -62,6 +64,15 @@ const WaitingApproval = () => {
             <p className="mb-6">
               Em caso de dúvidas, entre em contato através do formulário no site ou pelo WhatsApp.
             </p>
+            <Button 
+              variant="outline" 
+              className="mb-4"
+              onClick={() => setShowAdminInfo(!showAdminInfo)}
+            >
+              {showAdminInfo ? "Ocultar informações administrativas" : "Mostrar informações administrativas"}
+            </Button>
+            
+            {showAdminInfo && <AdminRegistrationInfo />}
           </div>
         </CardContent>
         <CardFooter className="flex justify-center">
