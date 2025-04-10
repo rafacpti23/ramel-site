@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -11,7 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { AdminRegistrationInfo } from "@/components/AdminRegistrationInfo";
 
 const Auth = () => {
-  const { user, loading, signIn, signUp } = useAuth();
+  const { user, loading, signIn, signUp, isPaid } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -25,9 +26,13 @@ const Auth = () => {
 
   useEffect(() => {
     if (!loading && user) {
-      navigate("/membro");
+      if (isPaid) {
+        navigate("/membro");
+      } else {
+        navigate("/membro/aguardando");
+      }
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, isPaid]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +40,7 @@ const Auth = () => {
     
     try {
       await signIn(email, password);
+      // A navegação é feita no useEffect após a atualização do estado
     } finally {
       setIsSubmitting(false);
     }
@@ -46,6 +52,7 @@ const Auth = () => {
     
     try {
       await signUp(email, password, fullName);
+      // A navegação é feita no useEffect após a atualização do estado
     } finally {
       setIsSubmitting(false);
     }
@@ -59,6 +66,7 @@ const Auth = () => {
         title: "Login com usuário admin",
         description: "Usando credenciais de administrador padrão.",
       });
+      // A navegação é feita no useEffect após a atualização do estado
     } catch (error) {
       toast({
         title: "Usuário admin não encontrado",

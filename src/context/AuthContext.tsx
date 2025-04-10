@@ -31,20 +31,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Primeiro configuramos o listener de auth state change
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
+      (event, newSession) => {
         setSession(newSession);
         setUser(newSession?.user ?? null);
-        setLoading(true);
         
+        // Importante usar setTimeout para evitar bloqueios e loops infinitos
         if (newSession?.user) {
-          await fetchUserProfile(newSession.user.id);
+          setTimeout(() => {
+            fetchUserProfile(newSession.user.id);
+          }, 0);
         } else {
           setUserProfile(null);
           setIsAdmin(false);
           setIsPaid(false);
+          setLoading(false);
         }
-        
-        setLoading(false);
       }
     );
 
@@ -57,9 +58,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (currentSession?.user) {
         await fetchUserProfile(currentSession.user.id);
+      } else {
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
 
     initAuth();
@@ -82,6 +83,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUserProfile(null);
         setIsAdmin(false);
         setIsPaid(false);
+        setLoading(false);
         return;
       }
 
@@ -94,16 +96,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } else {
         setIsPaid(profile?.payment_status === 'aprovado');
       }
+      
+      setLoading(false);
     } catch (error) {
       console.error('Erro ao buscar perfil:', error);
       setUserProfile(null);
       setIsAdmin(false);
       setIsPaid(false);
+      setLoading(false);
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
+      setLoading(true);
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -116,7 +122,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Bem-vindo de volta!",
       });
       
-      navigate('/membro');
+      // Navegação será feita automaticamente pelo useEffect após atualização do estado
     } catch (error: any) {
       console.error('Erro ao fazer login:', error);
       toast({
@@ -124,11 +130,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: error.message || "Ocorreu um erro ao tentar fazer login.",
         variant: "destructive",
       });
+      setLoading(false);
     }
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
+      setLoading(true);
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -146,7 +154,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Seu cadastro foi realizado, aguarde a confirmação do pagamento para ter acesso.",
       });
       
-      navigate('/membro/aguardando');
+      // Navegação será feita automaticamente pelo useEffect após atualização do estado
     } catch (error: any) {
       console.error('Erro ao fazer cadastro:', error);
       toast({
@@ -154,11 +162,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: error.message || "Ocorreu um erro ao tentar fazer cadastro.",
         variant: "destructive",
       });
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
+      setLoading(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       navigate('/');
@@ -169,6 +179,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: error.message || "Ocorreu um erro ao tentar sair.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
