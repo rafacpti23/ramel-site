@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { AdminRegistrationInfo } from "@/components/AdminRegistrationInfo";
+import AdminRegistrationInfo from "@/components/AdminRegistrationInfo";
 
 const WaitingApproval = () => {
   const { user, isPaid, loading, signOut } = useAuth();

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CardContent } from "@/components/ui/card";
-import { AdminRegistrationInfo } from "@/components/AdminRegistrationInfo";
+import AdminRegistrationInfo from "@/components/AdminRegistrationInfo";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { RegisterForm } from "@/components/auth/RegisterForm";
