@@ -2,10 +2,18 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Zap, Menu, X, User } from "lucide-react";
+import { Menu, X, User } from "lucide-react";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+    setIsOpen(false);
+  };
 
   return (
     <header className="fixed w-full top-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5">
@@ -27,18 +35,48 @@ const Navbar = () => {
         
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-6">
-          <a href="#home" className="hover:text-ramel transition-colors">Home</a>
-          <a href="#servicos" className="hover:text-ramel transition-colors">Serviços</a>
-          <a href="#produtos" className="hover:text-ramel transition-colors">Produtos</a>
-          <a href="#promocoes" className="hover:text-ramel transition-colors">Promoções</a>
-          <a href="#contato" className="hover:text-ramel transition-colors">Contato</a>
+          <a 
+            href="#home" 
+            className="hover:text-ramel transition-colors"
+            onClick={(e) => {e.preventDefault(); scrollToSection('home');}}
+          >
+            Home
+          </a>
+          <a 
+            href="#servicos" 
+            className="hover:text-ramel transition-colors"
+            onClick={(e) => {e.preventDefault(); scrollToSection('servicos');}}
+          >
+            Serviços
+          </a>
+          <a 
+            href="#produtos" 
+            className="hover:text-ramel transition-colors"
+            onClick={(e) => {e.preventDefault(); scrollToSection('produtos');}}
+          >
+            Produtos
+          </a>
+          <a 
+            href="#promocoes" 
+            className="hover:text-ramel transition-colors"
+            onClick={(e) => {e.preventDefault(); scrollToSection('promocoes');}}
+          >
+            Promoções
+          </a>
+          <a 
+            href="#contato" 
+            className="hover:text-ramel transition-colors"
+            onClick={(e) => {e.preventDefault(); scrollToSection('contato');}}
+          >
+            Contato
+          </a>
           <Link to="/auth">
             <Button variant="outline" className="flex items-center gap-2">
               <User className="h-4 w-4" />
               Área de Membros
             </Button>
           </Link>
-          <a href="#contato">
+          <a href="https://wa.me/5527999082624" target="_blank" rel="noopener noreferrer">
             <Button>Fale Conosco</Button>
           </a>
         </nav>
@@ -47,18 +85,48 @@ const Navbar = () => {
       {/* Mobile Navigation */}
       {isOpen && (
         <nav className="lg:hidden flex flex-col items-center gap-6 py-6 bg-secondary/80 backdrop-blur-md border-b border-white/5">
-          <a href="#home" className="hover:text-ramel transition-colors" onClick={() => setIsOpen(false)}>Home</a>
-          <a href="#servicos" className="hover:text-ramel transition-colors" onClick={() => setIsOpen(false)}>Serviços</a>
-          <a href="#produtos" className="hover:text-ramel transition-colors" onClick={() => setIsOpen(false)}>Produtos</a>
-          <a href="#promocoes" className="hover:text-ramel transition-colors" onClick={() => setIsOpen(false)}>Promoções</a>
-          <a href="#contato" className="hover:text-ramel transition-colors" onClick={() => setIsOpen(false)}>Contato</a>
+          <a 
+            href="#home" 
+            className="hover:text-ramel transition-colors"
+            onClick={(e) => {e.preventDefault(); scrollToSection('home');}}
+          >
+            Home
+          </a>
+          <a 
+            href="#servicos" 
+            className="hover:text-ramel transition-colors"
+            onClick={(e) => {e.preventDefault(); scrollToSection('servicos');}}
+          >
+            Serviços
+          </a>
+          <a 
+            href="#produtos" 
+            className="hover:text-ramel transition-colors"
+            onClick={(e) => {e.preventDefault(); scrollToSection('produtos');}}
+          >
+            Produtos
+          </a>
+          <a 
+            href="#promocoes" 
+            className="hover:text-ramel transition-colors"
+            onClick={(e) => {e.preventDefault(); scrollToSection('promocoes');}}
+          >
+            Promoções
+          </a>
+          <a 
+            href="#contato" 
+            className="hover:text-ramel transition-colors"
+            onClick={(e) => {e.preventDefault(); scrollToSection('contato');}}
+          >
+            Contato
+          </a>
           <Link to="/auth" onClick={() => setIsOpen(false)}>
             <Button variant="outline" className="flex items-center gap-2">
               <User className="h-4 w-4" />
               Área de Membros
             </Button>
           </Link>
-          <a href="#contato" onClick={() => setIsOpen(false)}>
+          <a href="https://wa.me/5527999082624" target="_blank" rel="noopener noreferrer" onClick={() => setIsOpen(false)}>
             <Button>Fale Conosco</Button>
           </a>
         </nav>

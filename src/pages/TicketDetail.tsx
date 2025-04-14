@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import MemberHeader from "@/components/MemberHeader";
-import { ArrowLeft, Loader2, Send } from "lucide-react";
+import { ArrowLeft, Loader2, Send, Lock } from "lucide-react";
 
 interface Ticket {
   id: string;
@@ -16,6 +16,7 @@ interface Ticket {
   description: string;
   status: string;
   created_at: string;
+  user_id: string;
 }
 
 interface TicketResponse {
@@ -36,6 +37,7 @@ const TicketDetail = () => {
   const [newResponse, setNewResponse] = useState("");
   const [loadingData, setLoadingData] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [hasPermission, setHasPermission] = useState(false);
   
   useEffect(() => {
     if (!loading && !user) {
@@ -60,6 +62,20 @@ const TicketDetail = () => {
         
       if (ticketError) throw ticketError;
       setTicket(ticketData as Ticket);
+      
+      // Verificar permissão (admin vê tudo, usuário só vê seus próprios tickets)
+      const hasAccess = isAdmin || (ticketData.user_id === user?.id);
+      setHasPermission(hasAccess);
+      
+      if (!hasAccess) {
+        toast({
+          title: "Acesso negado",
+          description: "Você não tem permissão para visualizar este ticket.",
+          variant: "destructive",
+        });
+        navigate("/membro/suporte");
+        return;
+      }
       
       // Buscar respostas do ticket
       const { data: responsesData, error: responsesError } = await supabase
@@ -88,6 +104,26 @@ const TicketDetail = () => {
     e.preventDefault();
     if (!newResponse.trim() || !user) return;
     
+    // Verificar se o ticket está fechado
+    if (ticket?.status === 'fechado' && !isAdmin) {
+      toast({
+        title: "Ticket fechado",
+        description: "Este ticket já foi fechado e não pode receber novas respostas.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Verificar se o usuário é o dono do ticket ou admin
+    if (!isAdmin && ticket?.user_id !== user.id) {
+      toast({
+        title: "Permissão negada",
+        description: "Você não tem permissão para responder este ticket.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setSubmitting(true);
     try {
       const { data, error } = await supabase
@@ -114,6 +150,23 @@ const TicketDetail = () => {
         if (updateError) throw updateError;
         
         setTicket(prev => prev ? {...prev, status: 'respondido'} : null);
+      }
+      
+      // Se é admin, permita fechar o ticket
+      if (isAdmin && newResponse.toLowerCase().includes('#fechar')) {
+        const { error: closeError } = await supabase
+          .from('support_tickets')
+          .update({ status: 'fechado' })
+          .eq('id', ticketId);
+          
+        if (closeError) throw closeError;
+        
+        setTicket(prev => prev ? {...prev, status: 'fechado'} : null);
+        
+        toast({
+          title: "Ticket fechado",
+          description: "O ticket foi fechado com sucesso.",
+        });
       }
       
       setResponses([...responses, ...(data as TicketResponse[])]);
@@ -144,10 +197,10 @@ const TicketDetail = () => {
     );
   }
   
-  if (!ticket) {
+  if (!ticket || !hasPermission) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
-        <p className="text-red-500">Ticket não encontrado.</p>
+        <p className="text-red-500">Ticket não encontrado ou sem permissão de acesso.</p>
         <Button 
           variant="outline" 
           className="mt-4"
@@ -222,10 +275,15 @@ const TicketDetail = () => {
           </div>
         )}
         
-        {ticket.status !== 'fechado' && (
+        {ticket.status !== 'fechado' || isAdmin ? (
           <Card className="glass-card">
             <CardHeader>
               <CardTitle>Enviar Resposta</CardTitle>
+              {isAdmin && (
+                <CardDescription>
+                  Dica: Inclua #fechar na sua resposta para fechar este ticket
+                </CardDescription>
+              )}
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmitResponse} className="space-y-4">
@@ -253,6 +311,22 @@ const TicketDetail = () => {
                   </Button>
                 </div>
               </form>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="glass-card bg-secondary/50">
+            <CardContent className="py-8 text-center">
+              <Lock className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-4" />
+              <h3 className="text-lg font-medium mb-2">Ticket Fechado</h3>
+              <p className="text-muted-foreground">
+                Este ticket foi fechado e não aceita mais respostas.
+              </p>
+              <Button 
+                className="mt-4"
+                onClick={() => navigate("/membro/suporte")}
+              >
+                Criar Novo Ticket
+              </Button>
             </CardContent>
           </Card>
         )}

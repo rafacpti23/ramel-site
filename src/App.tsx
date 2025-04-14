@@ -13,6 +13,10 @@ import SupportPage from "./pages/SupportPage";
 import TicketDetail from "./pages/TicketDetail";
 import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
+import AgendaProPlus from "./pages/AgendaProPlus";
+import DeliveryFlow from "./pages/DeliveryFlow";
+import FileManagement from "./pages/FileManagement";
+import VideoManagement from "./pages/VideoManagement";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +35,10 @@ const App = () => (
             <Route path="/membro/suporte" element={<SupportPage />} />
             <Route path="/membro/suporte/:ticketId" element={<TicketDetail />} />
             <Route path="/membro/admin" element={<AdminPage />} />
+            <Route path="/membro/admin/arquivos" element={<FileManagement />} />
+            <Route path="/membro/admin/videos" element={<VideoManagement />} />
+            <Route path="/produtos/agenda-pro-plus" element={<AgendaProPlus />} />
+            <Route path="/produtos/deliveryflow" element={<DeliveryFlow />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

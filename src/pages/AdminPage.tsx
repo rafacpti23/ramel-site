@@ -8,9 +8,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import MemberHeader from "@/components/MemberHeader";
-import { Loader2, UserCheck, X, CheckCheck } from "lucide-react";
+import { Loader2, UserCheck, X, CheckCheck, Edit, MessageSquare } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface UserProfile {
   id: string;
@@ -37,6 +45,13 @@ const AdminPage = () => {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryDescription, setNewCategoryDescription] = useState("");
   
+  // User edit state
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+  const [editUserName, setEditUserName] = useState("");
+  const [editUserEmail, setEditUserEmail] = useState("");
+  const [editUserPaymentStatus, setEditUserPaymentStatus] = useState("pendente");
+  
   useEffect(() => {
     if (!loading) {
       if (!user) {
@@ -61,7 +76,7 @@ const AdminPage = () => {
   const fetchData = async () => {
     setLoadingData(true);
     try {
-      // Buscar usuários
+      // Buscar usuários - não filtramos mais por admin
       const { data: usersData, error: usersError } = await supabase
         .from('profiles')
         .select('*')
@@ -140,6 +155,57 @@ const AdminPage = () => {
       toast({
         title: "Erro ao alterar permissões",
         description: error.message || "Não foi possível alterar as permissões do usuário.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const openEditUserDialog = (userProfile: UserProfile) => {
+    setEditingUser(userProfile);
+    setEditUserName(userProfile.full_name || "");
+    setEditUserEmail(userProfile.email || "");
+    setEditUserPaymentStatus(userProfile.payment_status);
+    setIsEditDialogOpen(true);
+  };
+  
+  const handleSaveUserEdit = async () => {
+    if (!editingUser) return;
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          full_name: editUserName,
+          email: editUserEmail,
+          payment_status: editUserPaymentStatus
+        })
+        .eq('id', editingUser.id);
+        
+      if (error) throw error;
+      
+      // Atualizar o estado local
+      setUsers(users.map(user => 
+        user.id === editingUser.id 
+          ? { 
+              ...user, 
+              full_name: editUserName,
+              email: editUserEmail,
+              payment_status: editUserPaymentStatus
+            } 
+          : user
+      ));
+      
+      toast({
+        title: "Usuário atualizado",
+        description: "Os dados do usuário foram atualizados com sucesso.",
+      });
+      
+      setIsEditDialogOpen(false);
+    } catch (error: any) {
+      console.error('Erro ao atualizar usuário:', error);
+      toast({
+        title: "Erro ao atualizar usuário",
+        description: error.message || "Não foi possível atualizar os dados do usuário.",
         variant: "destructive",
       });
     }
@@ -238,8 +304,10 @@ const AdminPage = () => {
             <TabsTrigger value="users">Usuários</TabsTrigger>
             <TabsTrigger value="categories">Categorias</TabsTrigger>
             <TabsTrigger value="content">Conteúdo</TabsTrigger>
+            <TabsTrigger value="tickets">Tickets de Suporte</TabsTrigger>
           </TabsList>
           
+          {/* Tab de Usuários */}
           <TabsContent value="users">
             <Card className="glass-card">
               <CardHeader>
@@ -279,6 +347,15 @@ const AdminPage = () => {
                           </td>
                           <td className="py-3 px-4 text-right">
                             <div className="flex gap-2 justify-end">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => openEditUserDialog(user)}
+                              >
+                                <Edit className="h-4 w-4 mr-1" />
+                                Editar
+                              </Button>
+                              
                               {user.payment_status !== 'aprovado' && (
                                 <Button 
                                   size="sm" 
@@ -318,6 +395,7 @@ const AdminPage = () => {
             </Card>
           </TabsContent>
           
+          {/* Tab de Categorias */}
           <TabsContent value="categories">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-1">
@@ -398,6 +476,7 @@ const AdminPage = () => {
             </div>
           </TabsContent>
           
+          {/* Tab de Conteúdo */}
           <TabsContent value="content">
             <Card className="glass-card">
               <CardHeader>
@@ -423,9 +502,173 @@ const AdminPage = () => {
               </CardContent>
             </Card>
           </TabsContent>
+          
+          {/* Nova Tab de Tickets de Suporte */}
+          <TabsContent value="tickets">
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle>Gerenciar Tickets de Suporte</CardTitle>
+                <CardDescription>Visualize e responda todos os tickets de suporte</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-end mb-4">
+                  <Button onClick={() => navigate("/membro/suporte")} className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    Ver Todos os Tickets
+                  </Button>
+                </div>
+                
+                <div className="overflow-x-auto">
+                  <AdminTicketsList />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </main>
+      
+      {/* Dialog para edição de usuário */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Editar Usuário</DialogTitle>
+            <DialogDescription>
+              Atualize as informações do usuário.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-name" className="text-right">
+                Nome
+              </Label>
+              <Input
+                id="edit-name"
+                value={editUserName}
+                onChange={(e) => setEditUserName(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-email" className="text-right">
+                Email
+              </Label>
+              <Input
+                id="edit-email"
+                value={editUserEmail}
+                onChange={(e) => setEditUserEmail(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-status" className="text-right">
+                Status
+              </Label>
+              <select
+                id="edit-status"
+                value={editUserPaymentStatus}
+                onChange={(e) => setEditUserPaymentStatus(e.target.value)}
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="pendente">Pendente</option>
+                <option value="aprovado">Aprovado</option>
+              </select>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button type="submit" onClick={handleSaveUserEdit}>
+              Salvar Alterações
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
+  );
+};
+
+// Componente de lista de tickets para admin
+const AdminTicketsList = () => {
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('support_tickets')
+          .select('*, profiles(full_name, email)')
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
+        setTickets(data || []);
+      } catch (error) {
+        console.error('Erro ao carregar tickets:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchTickets();
+  }, []);
+  
+  if (loading) {
+    return <div className="text-center py-4"><Loader2 className="h-4 w-4 animate-spin mx-auto" /></div>;
+  }
+  
+  if (tickets.length === 0) {
+    return <p className="text-center py-4">Nenhum ticket de suporte encontrado.</p>;
+  }
+  
+  return (
+    <table className="w-full border-collapse">
+      <thead>
+        <tr className="border-b border-white/10">
+          <th className="text-left py-3 px-4">Título</th>
+          <th className="text-left py-3 px-4">Usuário</th>
+          <th className="text-left py-3 px-4">Data</th>
+          <th className="text-left py-3 px-4">Status</th>
+          <th className="text-right py-3 px-4">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {tickets.map((ticket: any) => (
+          <tr key={ticket.id} className="border-b border-white/5 hover:bg-white/5">
+            <td className="py-3 px-4">{ticket.title}</td>
+            <td className="py-3 px-4">
+              {ticket.profiles?.full_name || 'N/A'}
+              <br />
+              <span className="text-xs text-muted-foreground">{ticket.profiles?.email}</span>
+            </td>
+            <td className="py-3 px-4">{new Date(ticket.created_at).toLocaleDateString('pt-BR')}</td>
+            <td className="py-3 px-4">
+              <span className={`px-2 py-1 rounded text-xs ${
+                ticket.status === 'aberto' 
+                  ? 'bg-blue-500/20 text-blue-300' 
+                  : ticket.status === 'respondido'
+                  ? 'bg-green-500/20 text-green-300'
+                  : 'bg-gray-500/20 text-gray-300'
+              }`}>
+                {ticket.status === 'aberto' ? 'Aberto' : 
+                 ticket.status === 'respondido' ? 'Respondido' : 'Fechado'}
+              </span>
+            </td>
+            <td className="py-3 px-4 text-right">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => navigate(`/membro/suporte/${ticket.id}`)}
+              >
+                Responder
+              </Button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 };
 

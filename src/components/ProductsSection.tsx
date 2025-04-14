@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const ProductsSection = ({ deliveryLogoUrl }: { deliveryLogoUrl?: string }) => {
   return (
@@ -59,7 +60,9 @@ const ProductsSection = ({ deliveryLogoUrl }: { deliveryLogoUrl?: string }) => {
               </CardContent>
               
               <CardFooter>
-                <Button className="w-full bg-ramel hover:bg-ramel-dark">Saiba Mais</Button>
+                <Link to="/produtos/agenda-pro-plus" className="w-full">
+                  <Button className="w-full bg-ramel hover:bg-ramel-dark">Saiba Mais</Button>
+                </Link>
               </CardFooter>
             </Card>
           </div>
@@ -118,7 +121,9 @@ const ProductsSection = ({ deliveryLogoUrl }: { deliveryLogoUrl?: string }) => {
               </CardContent>
               
               <CardFooter>
-                <Button className="w-full bg-ramel hover:bg-ramel-dark">Saiba Mais</Button>
+                <Link to="/produtos/deliveryflow" className="w-full">
+                  <Button className="w-full bg-ramel hover:bg-ramel-dark">Saiba Mais</Button>
+                </Link>
               </CardFooter>
             </Card>
           </div>

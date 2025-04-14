@@ -58,7 +58,9 @@ const PromotionSection = () => {
               </ul>
               
               <div className="flex justify-between items-center">
-                <Button className="bg-ramel hover:bg-ramel-dark">Contratar Agora</Button>
+                <a href="https://www.kqzyfj.com/click-101209511-12740671" target="_blank" rel="noopener noreferrer">
+                  <Button className="bg-ramel hover:bg-ramel-dark">Contratar Agora</Button>
+                </a>
                 
                 <a href="https://www.kqzyfj.com/click-101209511-12740671" target="_blank" rel="noopener noreferrer" className="ml-4">
                   <img src="https://www.ftjcfx.com/image-101209511-12740671" width="150" height="150" alt="VPS Promocional" className="rounded-lg hover:opacity-90 transition-opacity" />

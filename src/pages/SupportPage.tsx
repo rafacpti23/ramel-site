@@ -18,10 +18,11 @@ interface Ticket {
   description: string;
   status: string;
   created_at: string;
+  user_id: string;
 }
 
 const SupportPage = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
   
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -45,11 +46,19 @@ const SupportPage = () => {
   const fetchTickets = async () => {
     setLoadingData(true);
     try {
-      const { data, error } = await supabase
+      // Se for admin, buscar todos os tickets, senão apenas os do usuário
+      let query = supabase
         .from('support_tickets')
         .select('*')
         .order('created_at', { ascending: false });
         
+      // Se não for admin, filtrar apenas os tickets do usuário atual
+      if (!isAdmin && user?.id) {
+        query = query.eq('user_id', user.id);
+      }
+      
+      const { data, error } = await query;
+      
       if (error) throw error;
       setTickets(data || []);
     } catch (error) {

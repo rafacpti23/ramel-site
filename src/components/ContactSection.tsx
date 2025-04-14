@@ -1,10 +1,61 @@
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 const ContactSection = () => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!name || !email || !subject || !message) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha todos os campos do formulário.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setSubmitting(true);
+    
+    try {
+      // Enviar email usando mailto como fallback temporário
+      // Isso seria substituído por uma integração backend apropriada
+      const mailtoLink = `mailto:contato@ramelseg.com.br?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Nome: ${name}\nEmail: ${email}\n\n${message}`)}`;
+      window.open(mailtoLink);
+      
+      toast({
+        title: "Mensagem enviada",
+        description: "Sua mensagem foi enviada com sucesso.",
+      });
+      
+      // Limpar formulário
+      setName("");
+      setEmail("");
+      setSubject("");
+      setMessage("");
+    } catch (error) {
+      console.error("Erro ao enviar mensagem:", error);
+      toast({
+        title: "Erro ao enviar",
+        description: "Ocorreu um erro ao enviar sua mensagem. Por favor, tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <section id="contato" className="py-20">
       <div className="container mx-auto px-4">
@@ -18,19 +69,32 @@ const ContactSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <Card className="glass-card overflow-hidden">
             <CardContent className="p-6">
-              <form className="space-y-6">
+              <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label htmlFor="name" className="text-sm font-medium">
                       Nome
                     </label>
-                    <Input id="name" placeholder="Seu nome" />
+                    <Input 
+                      id="name" 
+                      placeholder="Seu nome" 
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
                   </div>
                   <div className="space-y-2">
                     <label htmlFor="email" className="text-sm font-medium">
                       Email
                     </label>
-                    <Input id="email" type="email" placeholder="seu@email.com" />
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      placeholder="seu@email.com" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
                   </div>
                 </div>
                 
@@ -38,18 +102,42 @@ const ContactSection = () => {
                   <label htmlFor="subject" className="text-sm font-medium">
                     Assunto
                   </label>
-                  <Input id="subject" placeholder="Assunto da mensagem" />
+                  <Input 
+                    id="subject" 
+                    placeholder="Assunto da mensagem" 
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    required
+                  />
                 </div>
                 
                 <div className="space-y-2">
                   <label htmlFor="message" className="text-sm font-medium">
                     Mensagem
                   </label>
-                  <Textarea id="message" placeholder="Como podemos ajudar?" rows={6} />
+                  <Textarea 
+                    id="message" 
+                    placeholder="Como podemos ajudar?" 
+                    rows={6} 
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    required
+                  />
                 </div>
                 
-                <Button type="submit" className="w-full bg-ramel hover:bg-ramel-dark">
-                  Enviar Mensagem
+                <Button 
+                  type="submit" 
+                  className="w-full bg-ramel hover:bg-ramel-dark"
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Enviando...
+                    </>
+                  ) : (
+                    "Enviar Mensagem"
+                  )}
                 </Button>
               </form>
             </CardContent>
