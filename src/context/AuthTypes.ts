@@ -1,16 +1,16 @@
 
-import { Session, User } from "@supabase/supabase-js";
+import { User } from "@supabase/supabase-js";
 
 export interface UserProfile {
   id: string;
-  email?: string;
-  full_name?: string;
+  email: string | null;
+  full_name: string | null;
   is_admin: boolean;
   payment_status: string;
+  whatsapp?: string | null;
 }
 
-export interface AuthContextProps {
-  session: Session | null;
+export interface AuthContextType {
   user: User | null;
   userProfile: UserProfile | null;
   loading: boolean;

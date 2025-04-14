@@ -72,6 +72,7 @@ export type Database = {
           is_admin: boolean
           payment_status: string
           updated_at: string
+          whatsapp: string | null
         }
         Insert: {
           created_at?: string
@@ -81,6 +82,7 @@ export type Database = {
           is_admin?: boolean
           payment_status?: string
           updated_at?: string
+          whatsapp?: string | null
         }
         Update: {
           created_at?: string
@@ -90,6 +92,7 @@ export type Database = {
           is_admin?: boolean
           payment_status?: string
           updated_at?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -155,6 +158,33 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      system_config: {
+        Row: {
+          id: string
+          live_chat_code: string | null
+          updated_at: string | null
+          updated_by: string | null
+          webhook_contact_form: string | null
+          webhook_ticket_response: string | null
+        }
+        Insert: {
+          id?: string
+          live_chat_code?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          webhook_contact_form?: string | null
+          webhook_ticket_response?: string | null
+        }
+        Update: {
+          id?: string
+          live_chat_code?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          webhook_contact_form?: string | null
+          webhook_ticket_response?: string | null
         }
         Relationships: []
       }

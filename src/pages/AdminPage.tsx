@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -51,6 +50,7 @@ const AdminPage = () => {
   const [editUserName, setEditUserName] = useState("");
   const [editUserEmail, setEditUserEmail] = useState("");
   const [editUserPaymentStatus, setEditUserPaymentStatus] = useState("pendente");
+  const [editUserWhatsapp, setEditUserWhatsapp] = useState("");
   
   useEffect(() => {
     if (!loading) {
@@ -165,6 +165,7 @@ const AdminPage = () => {
     setEditUserName(userProfile.full_name || "");
     setEditUserEmail(userProfile.email || "");
     setEditUserPaymentStatus(userProfile.payment_status);
+    setEditUserWhatsapp(userProfile.whatsapp || "");
     setIsEditDialogOpen(true);
   };
   
@@ -177,7 +178,8 @@ const AdminPage = () => {
         .update({ 
           full_name: editUserName,
           email: editUserEmail,
-          payment_status: editUserPaymentStatus
+          payment_status: editUserPaymentStatus,
+          whatsapp: editUserWhatsapp
         })
         .eq('id', editingUser.id);
         
@@ -190,7 +192,8 @@ const AdminPage = () => {
               ...user, 
               full_name: editUserName,
               email: editUserEmail,
-              payment_status: editUserPaymentStatus
+              payment_status: editUserPaymentStatus,
+              whatsapp: editUserWhatsapp
             } 
           : user
       ));
@@ -305,6 +308,7 @@ const AdminPage = () => {
             <TabsTrigger value="categories">Categorias</TabsTrigger>
             <TabsTrigger value="content">Conteúdo</TabsTrigger>
             <TabsTrigger value="tickets">Tickets de Suporte</TabsTrigger>
+            <TabsTrigger value="configs">Configurações</TabsTrigger>
           </TabsList>
           
           {/* Tab de Usuários */}
@@ -503,7 +507,7 @@ const AdminPage = () => {
             </Card>
           </TabsContent>
           
-          {/* Nova Tab de Tickets de Suporte */}
+          {/* Tab de Tickets de Suporte */}
           <TabsContent value="tickets">
             <Card className="glass-card">
               <CardHeader>
@@ -511,15 +515,29 @@ const AdminPage = () => {
                 <CardDescription>Visualize e responda todos os tickets de suporte</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex justify-end mb-4">
-                  <Button onClick={() => navigate("/membro/suporte")} className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4" />
-                    Ver Todos os Tickets
-                  </Button>
-                </div>
-                
                 <div className="overflow-x-auto">
                   <AdminTicketsList />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Nova Tab de Configurações */}
+          <TabsContent value="configs">
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle>Configurações do Sistema</CardTitle>
+                <CardDescription>Configure webhooks, chat ao vivo e outras integrações</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="p-6 text-center">
+                  <p className="mb-4">
+                    Acesse a página de configurações completa para gerenciar webhooks,
+                    integrações e recursos avançados do sistema.
+                  </p>
+                  <Button onClick={() => navigate("/membro/admin/configuracoes")}>
+                    Ir para Configurações
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -558,6 +576,19 @@ const AdminPage = () => {
                 id="edit-email"
                 value={editUserEmail}
                 onChange={(e) => setEditUserEmail(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-whatsapp" className="text-right">
+                WhatsApp
+              </Label>
+              <Input
+                id="edit-whatsapp"
+                value={editUserWhatsapp || ""}
+                onChange={(e) => setEditUserWhatsapp(e.target.value)}
+                placeholder="Ex: 11999887766"
                 className="col-span-3"
               />
             </div>
@@ -615,6 +646,34 @@ const AdminTicketsList = () => {
     fetchTickets();
   }, []);
   
+  const updateTicketStatus = async (ticketId, newStatus) => {
+    try {
+      const { error } = await supabase
+        .from('support_tickets')
+        .update({ status: newStatus })
+        .eq('id', ticketId);
+        
+      if (error) throw error;
+      
+      // Update local state
+      setTickets(tickets.map(ticket => 
+        ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket
+      ));
+      
+      toast({
+        title: "Status atualizado",
+        description: `O ticket foi marcado como ${newStatus}.`,
+      });
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error);
+      toast({
+        title: "Erro ao atualizar status",
+        description: "Não foi possível atualizar o status do ticket.",
+        variant: "destructive",
+      });
+    }
+  };
+  
   if (loading) {
     return <div className="text-center py-4"><Loader2 className="h-4 w-4 animate-spin mx-auto" /></div>;
   }
@@ -657,13 +716,35 @@ const AdminTicketsList = () => {
               </span>
             </td>
             <td className="py-3 px-4 text-right">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => navigate(`/membro/suporte/${ticket.id}`)}
-              >
-                Responder
-              </Button>
+              <div className="flex gap-2 justify-end">
+                {ticket.status !== 'fechado' && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => updateTicketStatus(ticket.id, 'fechado')}
+                  >
+                    Fechar
+                  </Button>
+                )}
+                
+                {ticket.status === 'fechado' && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => updateTicketStatus(ticket.id, 'aberto')}
+                  >
+                    Reabrir
+                  </Button>
+                )}
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate(`/membro/suporte/${ticket.id}`)}
+                >
+                  Responder
+                </Button>
+              </div>
             </td>
           </tr>
         ))}

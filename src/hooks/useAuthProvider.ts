@@ -96,7 +96,8 @@ export const useAuthProvider = () => {
               email: 'admin@admin.com',
               full_name: 'Administrador',
               is_admin: true,
-              payment_status: 'aprovado'
+              payment_status: 'aprovado',
+              whatsapp: ''
             });
             setIsAdmin(true);
             setIsPaid(true);
@@ -183,7 +184,7 @@ export const useAuthProvider = () => {
     }
   };
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (email: string, password: string, fullName: string, whatsapp: string = "") => {
     try {
       setLoading(true);
       const { error } = await supabase.auth.signUp({
@@ -192,6 +193,7 @@ export const useAuthProvider = () => {
         options: {
           data: {
             full_name: fullName,
+            whatsapp: whatsapp
           },
         },
       });

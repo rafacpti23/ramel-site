@@ -1,135 +1,175 @@
-
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, User } from "lucide-react";
+import { Menu, X } from "lucide-react";
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [scroll, setScroll] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setScroll(true);
+      } else {
+        setScroll(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      window.scrollTo({
+        top: element.offsetTop - 80,
+        behavior: 'smooth'
+      });
     }
-    setIsOpen(false);
+    setMenuOpen(false);
   };
 
   return (
-    <header className="fixed w-full top-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5">
-      <div className="container mx-auto flex justify-between items-center py-4">
-        <div className="flex items-center gap-2">
-          <Link to="/">
-            <img 
-              src="/lovable-uploads/ce5802ea-5404-48ed-ac8f-7ad335ff753c.png" 
-              alt="Ramel Tecnologia" 
-              className="h-12 w-auto" 
-            />
+    <header 
+      className={`sticky top-0 z-50 w-full border-b border-white/10 backdrop-blur-lg transition-all ${
+        scroll ? 'py-2 bg-background/80' : 'py-4 bg-transparent'
+      }`}
+    >
+      <div className="container flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2">
+          <img
+            src="/lovable-uploads/ce5802ea-5404-48ed-ac8f-7ad335ff753c.png"
+            alt="Logo Ramel"
+            className="h-10"
+          />
+          <div className="font-bold text-xl">Ramel</div>
+        </Link>
+
+        {/* Desktop Menu */}
+        <nav className="hidden md:flex items-center space-x-8">
+          <Link to="/" className="text-sm font-medium transition-colors hover:text-ramel">
+            Início
           </Link>
+          <button 
+            className="text-sm font-medium transition-colors hover:text-ramel"
+            onClick={() => scrollToSection('servicos')}
+          >
+            Nossos Serviços
+          </button>
+          <Link to="/agenda-pro-plus" className="text-sm font-medium transition-colors hover:text-ramel">
+            Agenda Pro+
+          </Link>
+          <Link to="/delivery-flow" className="text-sm font-medium transition-colors hover:text-ramel">
+            DeliveryFlow
+          </Link>
+          <button 
+            className="text-sm font-medium transition-colors hover:text-ramel"
+            onClick={() => scrollToSection('contato')}
+          >
+            Fale Conosco
+          </button>
+        </nav>
+
+        <div className="hidden md:flex items-center gap-4">
+          <Button asChild variant="outline" size="sm">
+            <a 
+              href="https://wa.me/5527999082624" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-1"
+            >
+              <span className="text-green-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-circle">
+                  <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+                </svg>
+              </span>
+              Whatsapp
+            </a>
+          </Button>
+          
+          <Button asChild size="sm">
+            <Link to="/auth">Área do Cliente</Link>
+          </Button>
         </div>
-        
-        {/* Mobile menu button */}
-        <button className="lg:hidden" onClick={() => setIsOpen(!isOpen)}>
-          {isOpen ? <X /> : <Menu />}
-        </button>
-        
-        {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-6">
-          <a 
-            href="#home" 
-            className="hover:text-ramel transition-colors"
-            onClick={(e) => {e.preventDefault(); scrollToSection('home');}}
-          >
-            Home
-          </a>
-          <a 
-            href="#servicos" 
-            className="hover:text-ramel transition-colors"
-            onClick={(e) => {e.preventDefault(); scrollToSection('servicos');}}
-          >
-            Serviços
-          </a>
-          <a 
-            href="#produtos" 
-            className="hover:text-ramel transition-colors"
-            onClick={(e) => {e.preventDefault(); scrollToSection('produtos');}}
-          >
-            Produtos
-          </a>
-          <a 
-            href="#promocoes" 
-            className="hover:text-ramel transition-colors"
-            onClick={(e) => {e.preventDefault(); scrollToSection('promocoes');}}
-          >
-            Promoções
-          </a>
-          <a 
-            href="#contato" 
-            className="hover:text-ramel transition-colors"
-            onClick={(e) => {e.preventDefault(); scrollToSection('contato');}}
-          >
-            Contato
-          </a>
-          <Link to="/auth">
-            <Button variant="outline" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              Área de Membros
-            </Button>
-          </Link>
-          <a href="https://wa.me/5527999082624" target="_blank" rel="noopener noreferrer">
-            <Button>Fale Conosco</Button>
-          </a>
-        </nav>
+
+        {/* Mobile Menu Toggle */}
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="md:hidden" 
+          onClick={() => setMenuOpen(!menuOpen)}
+        >
+          {menuOpen ? <X /> : <Menu />}
+        </Button>
       </div>
-      
-      {/* Mobile Navigation */}
-      {isOpen && (
-        <nav className="lg:hidden flex flex-col items-center gap-6 py-6 bg-secondary/80 backdrop-blur-md border-b border-white/5">
-          <a 
-            href="#home" 
-            className="hover:text-ramel transition-colors"
-            onClick={(e) => {e.preventDefault(); scrollToSection('home');}}
-          >
-            Home
-          </a>
-          <a 
-            href="#servicos" 
-            className="hover:text-ramel transition-colors"
-            onClick={(e) => {e.preventDefault(); scrollToSection('servicos');}}
-          >
-            Serviços
-          </a>
-          <a 
-            href="#produtos" 
-            className="hover:text-ramel transition-colors"
-            onClick={(e) => {e.preventDefault(); scrollToSection('produtos');}}
-          >
-            Produtos
-          </a>
-          <a 
-            href="#promocoes" 
-            className="hover:text-ramel transition-colors"
-            onClick={(e) => {e.preventDefault(); scrollToSection('promocoes');}}
-          >
-            Promoções
-          </a>
-          <a 
-            href="#contato" 
-            className="hover:text-ramel transition-colors"
-            onClick={(e) => {e.preventDefault(); scrollToSection('contato');}}
-          >
-            Contato
-          </a>
-          <Link to="/auth" onClick={() => setIsOpen(false)}>
-            <Button variant="outline" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              Área de Membros
-            </Button>
-          </Link>
-          <a href="https://wa.me/5527999082624" target="_blank" rel="noopener noreferrer" onClick={() => setIsOpen(false)}>
-            <Button>Fale Conosco</Button>
-          </a>
-        </nav>
+
+      {/* Mobile Menu */}
+      {menuOpen && (
+        <div className="md:hidden border-t border-white/10 bg-background">
+          <div className="flex flex-col space-y-3 p-4">
+            <Link 
+              to="/" 
+              className="px-3 py-2 rounded-md hover:bg-white/5"
+              onClick={() => setMenuOpen(false)}
+            >
+              Início
+            </Link>
+            <button 
+              className="px-3 py-2 text-left rounded-md hover:bg-white/5"
+              onClick={() => scrollToSection('servicos')}
+            >
+              Nossos Serviços
+            </button>
+            <Link 
+              to="/agenda-pro-plus" 
+              className="px-3 py-2 rounded-md hover:bg-white/5"
+              onClick={() => setMenuOpen(false)}
+            >
+              Agenda Pro+
+            </Link>
+            <Link 
+              to="/delivery-flow" 
+              className="px-3 py-2 rounded-md hover:bg-white/5"
+              onClick={() => setMenuOpen(false)}
+            >
+              DeliveryFlow
+            </Link>
+            <button 
+              className="px-3 py-2 text-left rounded-md hover:bg-white/5"
+              onClick={() => scrollToSection('contato')}
+            >
+              Fale Conosco
+            </button>
+            
+            <div className="pt-2 border-t border-white/10 flex flex-col gap-3">
+              <Button asChild variant="outline" size="sm">
+                <a 
+                  href="https://wa.me/5527999082624" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-1"
+                >
+                  <span className="text-green-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-circle">
+                      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+                    </svg>
+                  </span>
+                  Whatsapp
+                </a>
+              </Button>
+              
+              <Button asChild size="sm">
+                <Link to="/auth" onClick={() => setMenuOpen(false)}>
+                  Área do Cliente
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </header>
   );

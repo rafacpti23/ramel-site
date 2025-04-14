@@ -22,7 +22,7 @@ interface Ticket {
 }
 
 const SupportPage = () => {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, isAdmin, userProfile } = useAuth();
   const navigate = useNavigate();
   
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -46,7 +46,6 @@ const SupportPage = () => {
   const fetchTickets = async () => {
     setLoadingData(true);
     try {
-      // Se for admin, buscar todos os tickets, senão apenas os do usuário
       let query = supabase
         .from('support_tickets')
         .select('*')
@@ -82,6 +81,16 @@ const SupportPage = () => {
         throw new Error("Usuário não autenticado");
       }
       
+      // Verificar se o usuário tem WhatsApp cadastrado
+      if (!userProfile?.whatsapp && !isAdmin) {
+        toast({
+          title: "WhatsApp necessário",
+          description: "Por favor, atualize seu perfil com um número de WhatsApp para criar tickets.",
+          variant: "destructive",
+        });
+        throw new Error("WhatsApp não cadastrado");
+      }
+      
       const { data, error } = await supabase
         .from('support_tickets')
         .insert([
@@ -106,11 +115,13 @@ const SupportPage = () => {
       setNewTicketDescription("");
     } catch (error: any) {
       console.error('Erro ao criar ticket:', error);
-      toast({
-        title: "Erro ao criar ticket",
-        description: error.message || "Não foi possível criar o ticket.",
-        variant: "destructive",
-      });
+      if (error.message !== "WhatsApp não cadastrado") {
+        toast({
+          title: "Erro ao criar ticket",
+          description: error.message || "Não foi possível criar o ticket.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setSubmitting(false);
     }
