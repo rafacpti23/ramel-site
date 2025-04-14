@@ -1,4 +1,3 @@
-
 import { User } from "@supabase/supabase-js";
 
 export interface UserProfile {
@@ -21,7 +20,6 @@ export interface AuthContextType {
   isPaid: boolean;
 }
 
-// This type was missing and is needed in AuthContext.tsx
 export interface AuthContextProps {
   user: User | null;
   userProfile: UserProfile | null;

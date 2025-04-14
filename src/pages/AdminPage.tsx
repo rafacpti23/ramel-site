@@ -176,7 +176,7 @@ const AdminPage = () => {
           full_name: editUserName,
           email: editUserEmail,
           payment_status: editUserPaymentStatus,
-          whatsapp: editUserWhatsapp
+          whatsapp: editUserWhatsapp || null
         })
         .eq('id', editingUser.id);
         
@@ -189,7 +189,7 @@ const AdminPage = () => {
               full_name: editUserName,
               email: editUserEmail,
               payment_status: editUserPaymentStatus,
-              whatsapp: editUserWhatsapp
+              whatsapp: editUserWhatsapp || null
             } 
           : user
       ));
