@@ -44,7 +44,6 @@ const AdminPage = () => {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryDescription, setNewCategoryDescription] = useState("");
   
-  // User edit state
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [editUserName, setEditUserName] = useState("");
@@ -76,7 +75,6 @@ const AdminPage = () => {
   const fetchData = async () => {
     setLoadingData(true);
     try {
-      // Buscar usuários - não filtramos mais por admin
       const { data: usersData, error: usersError } = await supabase
         .from('profiles')
         .select('*')
@@ -85,7 +83,6 @@ const AdminPage = () => {
       if (usersError) throw usersError;
       setUsers(usersData as UserProfile[]);
       
-      // Buscar categorias
       const { data: categoriesData, error: categoriesError } = await supabase
         .from('categories')
         .select('*')
@@ -185,7 +182,6 @@ const AdminPage = () => {
         
       if (error) throw error;
       
-      // Atualizar o estado local
       setUsers(users.map(user => 
         user.id === editingUser.id 
           ? { 
@@ -311,7 +307,6 @@ const AdminPage = () => {
             <TabsTrigger value="configs">Configurações</TabsTrigger>
           </TabsList>
           
-          {/* Tab de Usuários */}
           <TabsContent value="users">
             <Card className="glass-card">
               <CardHeader>
@@ -399,7 +394,6 @@ const AdminPage = () => {
             </Card>
           </TabsContent>
           
-          {/* Tab de Categorias */}
           <TabsContent value="categories">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-1">
@@ -480,7 +474,6 @@ const AdminPage = () => {
             </div>
           </TabsContent>
           
-          {/* Tab de Conteúdo */}
           <TabsContent value="content">
             <Card className="glass-card">
               <CardHeader>
@@ -507,7 +500,6 @@ const AdminPage = () => {
             </Card>
           </TabsContent>
           
-          {/* Tab de Tickets de Suporte */}
           <TabsContent value="tickets">
             <Card className="glass-card">
               <CardHeader>
@@ -522,7 +514,6 @@ const AdminPage = () => {
             </Card>
           </TabsContent>
           
-          {/* Nova Tab de Configurações */}
           <TabsContent value="configs">
             <Card className="glass-card">
               <CardHeader>
@@ -545,7 +536,6 @@ const AdminPage = () => {
         </Tabs>
       </main>
       
-      {/* Dialog para edição de usuário */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -620,7 +610,6 @@ const AdminPage = () => {
   );
 };
 
-// Componente de lista de tickets para admin
 const AdminTicketsList = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -655,7 +644,6 @@ const AdminTicketsList = () => {
         
       if (error) throw error;
       
-      // Update local state
       setTickets(tickets.map(ticket => 
         ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket
       ));

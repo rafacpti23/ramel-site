@@ -7,7 +7,7 @@ export interface UserProfile {
   full_name: string | null;
   is_admin: boolean;
   payment_status: string;
-  whatsapp?: string | null;
+  whatsapp: string | null;
 }
 
 export interface AuthContextType {
@@ -15,7 +15,19 @@ export interface AuthContextType {
   userProfile: UserProfile | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, fullName: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName: string, whatsapp?: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  isAdmin: boolean;
+  isPaid: boolean;
+}
+
+// This type was missing and is needed in AuthContext.tsx
+export interface AuthContextProps {
+  user: User | null;
+  userProfile: UserProfile | null;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName: string, whatsapp?: string) => Promise<void>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
   isPaid: boolean;
