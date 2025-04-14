@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
@@ -17,14 +17,45 @@ import {
 } from "@/components/ui/dialog";
 import { UserProfile } from "@/context/AuthTypes";
 
+interface ExtendedUserProfile extends UserProfile {
+  created_at: string;
+}
+
 const UserManagement = () => {
-  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [users, setUsers] = useState<ExtendedUserProfile[]>([]);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+  const [editingUser, setEditingUser] = useState<ExtendedUserProfile | null>(null);
   const [editUserName, setEditUserName] = useState("");
   const [editUserEmail, setEditUserEmail] = useState("");
   const [editUserPaymentStatus, setEditUserPaymentStatus] = useState("pendente");
   const [editUserWhatsapp, setEditUserWhatsapp] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (error) throw error;
+      
+      setUsers(data as ExtendedUserProfile[]);
+    } catch (error) {
+      console.error('Erro ao carregar usuários:', error);
+      toast({
+        title: "Erro ao carregar usuários",
+        description: "Não foi possível carregar a lista de usuários.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const approvePayment = async (userId: string) => {
     try {
@@ -80,7 +111,7 @@ const UserManagement = () => {
     }
   };
   
-  const openEditUserDialog = (userProfile: UserProfile) => {
+  const openEditUserDialog = (userProfile: ExtendedUserProfile) => {
     setEditingUser(userProfile);
     setEditUserName(userProfile.full_name || "");
     setEditUserEmail(userProfile.email || "");
@@ -293,9 +324,5 @@ const UserManagement = () => {
     </>
   );
 };
-
-interface ExtendedUserProfile extends UserProfile {
-  created_at: string;
-}
 
 export default UserManagement;

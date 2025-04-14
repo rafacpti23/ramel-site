@@ -11,10 +11,9 @@ interface Ticket {
   title: string;
   status: string;
   created_at: string;
-  profiles: {
-    full_name: string | null;
-    email: string | null;
-  } | null;
+  user_id: string;
+  user_email?: string | null;
+  user_name?: string | null;
 }
 
 const AdminTicketsList = () => {
@@ -25,13 +24,38 @@ const AdminTicketsList = () => {
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        const { data, error } = await supabase
+        // First, get all tickets
+        const { data: ticketsData, error: ticketsError } = await supabase
           .from('support_tickets')
-          .select('*, profiles(full_name, email)')
+          .select('*')
           .order('created_at', { ascending: false });
           
-        if (error) throw error;
-        setTickets(data || []);
+        if (ticketsError) throw ticketsError;
+        
+        if (!ticketsData || ticketsData.length === 0) {
+          setTickets([]);
+          setLoading(false);
+          return;
+        }
+        
+        // Now get user details for each ticket
+        const ticketsWithProfiles = await Promise.all(
+          ticketsData.map(async (ticket) => {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('full_name, email')
+              .eq('id', ticket.user_id)
+              .single();
+              
+            return {
+              ...ticket,
+              user_name: profileData?.full_name || null,
+              user_email: profileData?.email || null
+            };
+          })
+        );
+        
+        setTickets(ticketsWithProfiles);
       } catch (error) {
         console.error('Erro ao carregar tickets:', error);
       } finally {
@@ -93,9 +117,9 @@ const AdminTicketsList = () => {
           <tr key={ticket.id} className="border-b border-white/5 hover:bg-white/5">
             <td className="py-3 px-4">{ticket.title}</td>
             <td className="py-3 px-4">
-              {ticket.profiles?.full_name || 'N/A'}
+              {ticket.user_name || 'N/A'}
               <br />
-              <span className="text-xs text-muted-foreground">{ticket.profiles?.email}</span>
+              <span className="text-xs text-muted-foreground">{ticket.user_email}</span>
             </td>
             <td className="py-3 px-4">{new Date(ticket.created_at).toLocaleDateString('pt-BR')}</td>
             <td className="py-3 px-4">
