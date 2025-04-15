@@ -13,6 +13,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 
+// Define a local interface to extend the database type with our expected fields
+interface SystemConfigData {
+  id: string;
+  webhook_contact_form: string | null;
+  webhook_ticket_response: string | null;
+  live_chat_code: string | null;
+  updated_at: string | null;
+  updated_by: string | null;
+  // Add these fields with correct types even if they're not in the type definition
+  live_chat_enabled: boolean;
+  chat_button_text: string;
+}
+
 const SystemConfig = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -36,11 +49,23 @@ const SystemConfig = () => {
       if (error) throw error;
       
       if (data) {
+        // Use the data with safe type assertions and fallbacks
         setWebhookContactForm(data.webhook_contact_form || "");
         setWebhookTicketResponse(data.webhook_ticket_response || "");
         setLiveChatCode(data.live_chat_code || "");
-        setLiveChatEnabled(data.live_chat_enabled !== false); // default to true if not set
-        setChatButtonText(data.chat_button_text || "Estamos aqui!");
+        
+        // For the properties not in the type definition, use type assertion with fallbacks
+        setLiveChatEnabled(
+          typeof data.live_chat_enabled !== 'undefined' 
+            ? (data.live_chat_enabled as boolean) 
+            : true
+        );
+        
+        setChatButtonText(
+          typeof data.chat_button_text !== 'undefined' 
+            ? (data.chat_button_text as string) 
+            : "Estamos aqui!"
+        );
       }
     } catch (error) {
       console.error('Erro ao carregar configurações:', error);
@@ -68,26 +93,28 @@ const SystemConfig = () => {
       let result;
       
       if (existingConfig) {
-        // Atualiza a configuração existente
+        // Atualiza a configuração existente com todos os campos esperados
         result = await supabase
           .from('system_config')
           .update({
             webhook_contact_form: webhookContactForm,
             webhook_ticket_response: webhookTicketResponse,
             live_chat_code: liveChatCode,
+            // Add these fields with our local variables
             live_chat_enabled: liveChatEnabled,
             chat_button_text: chatButtonText,
             updated_at: new Date().toISOString()
           })
           .eq('id', existingConfig.id);
       } else {
-        // Insere uma nova configuração
+        // Insere uma nova configuração com todos os campos esperados
         result = await supabase
           .from('system_config')
           .insert({
             webhook_contact_form: webhookContactForm,
             webhook_ticket_response: webhookTicketResponse,
             live_chat_code: liveChatCode,
+            // Add these fields with our local variables
             live_chat_enabled: liveChatEnabled,
             chat_button_text: chatButtonText,
             updated_at: new Date().toISOString()

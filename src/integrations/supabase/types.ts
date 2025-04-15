@@ -163,24 +163,30 @@ export type Database = {
       }
       system_config: {
         Row: {
+          chat_button_text: string | null
           id: string
           live_chat_code: string | null
+          live_chat_enabled: boolean | null
           updated_at: string | null
           updated_by: string | null
           webhook_contact_form: string | null
           webhook_ticket_response: string | null
         }
         Insert: {
+          chat_button_text?: string | null
           id?: string
           live_chat_code?: string | null
+          live_chat_enabled?: boolean | null
           updated_at?: string | null
           updated_by?: string | null
           webhook_contact_form?: string | null
           webhook_ticket_response?: string | null
         }
         Update: {
+          chat_button_text?: string | null
           id?: string
           live_chat_code?: string | null
+          live_chat_enabled?: boolean | null
           updated_at?: string | null
           updated_by?: string | null
           webhook_contact_form?: string | null
