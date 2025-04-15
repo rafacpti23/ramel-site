@@ -1,7 +1,27 @@
+
 /**
  * Service responsible for managing live chat functionality
  */
 export class LiveChatService {
+  /**
+   * Validates if a string contains potential script injection
+   */
+  static isScriptSafe(code: string): boolean {
+    if (!code) return true;
+    
+    // Check for common script injection patterns
+    const dangerousPatterns = [
+      /<script[^>]*src=/i,  // External script loading
+      /document\.cookie/i,  // Cookie manipulation
+      /localStorage\./i,    // LocalStorage access
+      /sessionStorage\./i,  // SessionStorage access
+      /eval\(/i,            // eval() function
+      /fetch\(['"]https?:\/\/(?!embed\.tawk\.to)/i, // fetch to unauthorized domains
+    ];
+    
+    return !dangerousPatterns.some(pattern => pattern.test(code));
+  }
+  
   /**
    * Updates the live chat script dynamically
    */
@@ -14,6 +34,12 @@ export class LiveChatService {
 
     // If chat is disabled, simply return - don't add any script
     if (!liveChatEnabled) return;
+    
+    // Basic security check for custom code
+    if (liveChatCode && !this.isScriptSafe(liveChatCode)) {
+      console.error("Potentially unsafe script detected in live chat code");
+      return;
+    }
 
     // Create a new script element
     const tawkScript = document.createElement('script');

@@ -17,6 +17,17 @@ interface SystemConfigData {
   chat_button_text: string;
 }
 
+// Utility function to validate URLs
+export const validateUrl = (url: string): boolean => {
+  if (!url) return true; // Empty URLs are allowed
+  try {
+    new URL(url);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
 export const useSystemConfig = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -67,6 +78,25 @@ export const useSystemConfig = () => {
   };
   
   const saveConfig = async () => {
+    // Validate URLs before saving
+    if (webhookContactForm && !validateUrl(webhookContactForm)) {
+      toast({
+        title: "URL inválida",
+        description: "O formato da URL do webhook de contato é inválido.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (webhookTicketResponse && !validateUrl(webhookTicketResponse)) {
+      toast({
+        title: "URL inválida",
+        description: "O formato da URL do webhook de ticket é inválido.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setSaving(true);
     try {
       // Primeiro verifica se existe uma configuração na tabela
