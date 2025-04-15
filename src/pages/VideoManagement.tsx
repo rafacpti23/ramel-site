@@ -19,6 +19,9 @@ interface VideoLesson {
   video_url: string;
   category_id: string;
   created_at: string;
+  categories?: {
+    name: string;
+  };
 }
 
 interface Category {
@@ -111,7 +114,7 @@ const VideoManagement = () => {
     
     setSubmitting(true);
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('video_lessons')
         .insert([
           {
@@ -120,18 +123,18 @@ const VideoManagement = () => {
             video_url: newVideoUrl,
             category_id: newVideoCategory
           }
-        ])
-        .select();
+        ]);
         
       if (error) throw error;
-      
-      setVideos([...(data as VideoLesson[]), ...videos]);
-      resetForm();
       
       toast({
         title: "Vídeo adicionado",
         description: "O vídeo foi adicionado com sucesso.",
       });
+      
+      resetForm();
+      fetchData(); // Recarregar a lista após adicionar
+      
     } catch (error: any) {
       console.error('Erro ao adicionar vídeo:', error);
       toast({
@@ -357,7 +360,7 @@ const VideoManagement = () => {
                           </div>
                         </td>
                         <td className="py-3 px-4">
-                          {(video as any).categories?.name || "Sem categoria"}
+                          {video.categories?.name || "Sem categoria"}
                         </td>
                         <td className="py-3 px-4">
                           {new Date(video.created_at).toLocaleDateString('pt-BR')}

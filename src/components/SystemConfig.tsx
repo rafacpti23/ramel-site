@@ -26,7 +26,7 @@ const SystemConfig = () => {
       const { data, error } = await supabase
         .from('system_config')
         .select('*')
-        .single();
+        .maybeSingle();
         
       if (error) throw error;
       
@@ -50,23 +50,52 @@ const SystemConfig = () => {
   const saveConfig = async () => {
     setSaving(true);
     try {
-      const { error } = await supabase
+      // Primeiro verifica se existe uma configuração na tabela
+      const { data: existingConfig, error: fetchError } = await supabase
         .from('system_config')
-        .update({
-          webhook_contact_form: webhookContactForm,
-          webhook_ticket_response: webhookTicketResponse,
-          live_chat_code: liveChatCode,
-          updated_at: new Date().toISOString(),
-          updated_by: (await supabase.auth.getUser()).data.user?.id
-        })
-        .eq('id', (await supabase.from('system_config').select('id').single()).data?.id);
+        .select('id')
+        .maybeSingle();
         
-      if (error) throw error;
+      if (fetchError) throw fetchError;
+      
+      let result;
+      
+      if (existingConfig) {
+        // Atualiza a configuração existente
+        result = await supabase
+          .from('system_config')
+          .update({
+            webhook_contact_form: webhookContactForm,
+            webhook_ticket_response: webhookTicketResponse,
+            live_chat_code: liveChatCode,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingConfig.id);
+      } else {
+        // Insere uma nova configuração
+        result = await supabase
+          .from('system_config')
+          .insert({
+            webhook_contact_form: webhookContactForm,
+            webhook_ticket_response: webhookTicketResponse,
+            live_chat_code: liveChatCode,
+            updated_at: new Date().toISOString()
+          });
+      }
+      
+      if (result.error) throw result.error;
       
       toast({
         title: "Configurações salvas",
         description: "As configurações do sistema foram atualizadas com sucesso."
       });
+      
+      // Se o código de chat ao vivo foi alterado, avise para recarregar a página
+      toast({
+        title: "Aviso importante",
+        description: "Para que as alterações no chat ao vivo entrem em vigor, é necessário recarregar a página."
+      });
+      
     } catch (error) {
       console.error('Erro ao salvar configurações:', error);
       toast({
@@ -161,6 +190,15 @@ const SystemConfig = () => {
                 <p className="text-sm text-muted-foreground">
                   Cole o código de integração fornecido pelo seu serviço de chat ao vivo,
                   como Tawk.to, Crisp, LiveChat, etc.
+                </p>
+              </div>
+              
+              <div className="bg-green-500/10 border border-green-500/30 rounded-md p-4 mt-4">
+                <h4 className="font-medium text-green-500 mb-2">Código Tawk.to Já Configurado</h4>
+                <p className="text-sm">
+                  O código do Tawk.to já foi adicionado ao site. Caso queira alterá-lo, 
+                  cole o novo código no campo acima e salve as configurações. Para usar o código padrão,
+                  deixe este campo em branco.
                 </p>
               </div>
               
