@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import LiveChatPreview from "./LiveChatPreview";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface LiveChatTabProps {
   liveChatEnabled: boolean;
@@ -23,7 +25,7 @@ const LiveChatTab = ({
   setLiveChatCode
 }: LiveChatTabProps) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <h3 className="text-lg font-semibold">Chat ao Vivo</h3>
       
       <div className="flex items-center space-x-2 mb-6">
@@ -37,34 +39,50 @@ const LiveChatTab = ({
         </Label>
       </div>
       
-      <div className="space-y-3">
-        <Label htmlFor="chat-text">Texto do Botão de Chat</Label>
-        <Input
-          id="chat-text"
-          placeholder="Estamos aqui!"
-          value={chatButtonText}
-          onChange={(e) => setChatButtonText(e.target.value)}
-          disabled={!liveChatEnabled}
-        />
-        <p className="text-sm text-muted-foreground">
-          Este texto será exibido no botão de chat quando o visitante acessar seu site.
-        </p>
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-6">
+          <div className="space-y-3">
+            <Label htmlFor="chat-text">Texto do Botão de Chat</Label>
+            <Input
+              id="chat-text"
+              placeholder="Estamos aqui!"
+              value={chatButtonText}
+              onChange={(e) => setChatButtonText(e.target.value)}
+              disabled={!liveChatEnabled}
+            />
+            <p className="text-sm text-muted-foreground">
+              Este texto será exibido no botão de chat quando o visitante acessar seu site.
+            </p>
+          </div>
 
-      <div className="space-y-3 mt-6">
-        <Label htmlFor="chat-code">Código Personalizado (Opcional)</Label>
-        <Textarea
-          id="chat-code"
-          placeholder="<!-- Cole aqui o código do seu serviço de chat (Tawk.to, Crisp, etc) -->"
-          value={liveChatCode}
-          onChange={(e) => setLiveChatCode(e.target.value)}
-          rows={8}
-          disabled={!liveChatEnabled}
-        />
-        <p className="text-sm text-muted-foreground">
-          Se desejar usar código completamente personalizado, cole-o aqui. 
-          Caso contrário, deixe em branco para usar as configurações acima.
-        </p>
+          <div className="space-y-3">
+            <Label htmlFor="chat-code">Código Personalizado (Opcional)</Label>
+            <Textarea
+              id="chat-code"
+              placeholder="<!-- Cole aqui o código do seu serviço de chat (Tawk.to, Crisp, etc) -->"
+              value={liveChatCode}
+              onChange={(e) => setLiveChatCode(e.target.value)}
+              rows={5}
+              disabled={!liveChatEnabled}
+            />
+            <p className="text-sm text-muted-foreground">
+              Se desejar usar código completamente personalizado, cole-o aqui. 
+              Caso contrário, deixe em branco para usar as configurações acima.
+            </p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <Label>Pré-visualização</Label>
+          <LiveChatPreview 
+            chatButtonText={chatButtonText} 
+            liveChatEnabled={liveChatEnabled} 
+          />
+          <p className="text-sm text-muted-foreground">
+            Esta é uma prévia aproximada de como o botão de chat aparecerá no seu site.
+            A aparência real pode variar dependendo do layout e estilo do seu site.
+          </p>
+        </div>
       </div>
       
       <div className="bg-green-500/10 border border-green-500/30 rounded-md p-4 mt-4">
