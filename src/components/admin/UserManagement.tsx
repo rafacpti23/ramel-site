@@ -30,13 +30,31 @@ const UserManagement = () => {
   const [editUserPaymentStatus, setEditUserPaymentStatus] = useState("pendente");
   const [editUserWhatsapp, setEditUserWhatsapp] = useState("");
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [totalUsers, setTotalUsers] = useState(0);
 
   useEffect(() => {
     fetchUsers();
+    countTotalUsers();
   }, []);
+
+  const countTotalUsers = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+        
+      if (error) throw error;
+      
+      setTotalUsers(count || 0);
+    } catch (error) {
+      console.error('Erro ao contar usuários:', error);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -44,6 +62,7 @@ const UserManagement = () => {
         
       if (error) throw error;
       
+      console.log(`Carregados ${data.length} usuários do banco de dados`);
       setUsers(data as ExtendedUserProfile[]);
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
@@ -164,12 +183,37 @@ const UserManagement = () => {
     }
   };
 
+  const filteredUsers = searchTerm 
+    ? users.filter(user => 
+        (user.full_name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.email || "").toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : users;
+
   return (
     <>
       <Card className="glass-card">
         <CardHeader>
           <CardTitle>Gerenciar Usuários</CardTitle>
-          <CardDescription>Aprovar pagamentos e gerenciar permissões</CardDescription>
+          <CardDescription>
+            Aprovar pagamentos e gerenciar permissões ({users.length} de {totalUsers} usuários carregados)
+          </CardDescription>
+          <div className="mt-4 flex gap-4">
+            <div className="flex-1">
+              <Input 
+                placeholder="Buscar por nome ou email" 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={fetchUsers}
+              disabled={loading}
+            >
+              Atualizar Lista
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -185,66 +229,74 @@ const UserManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => (
-                  <tr key={user.id} className="border-b border-white/5 hover:bg-white/5">
-                    <td className="py-3 px-4">{user.full_name || "Sem nome"}</td>
-                    <td className="py-3 px-4">{user.email}</td>
-                    <td className="py-3 px-4">{new Date(user.created_at).toLocaleDateString('pt-BR')}</td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2 py-1 rounded text-xs ${
-                        user.payment_status === 'aprovado' 
-                          ? 'bg-green-500/20 text-green-300' 
-                          : 'bg-yellow-500/20 text-yellow-300'
-                      }`}>
-                        {user.payment_status === 'aprovado' ? 'Aprovado' : 'Pendente'}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      {user.is_admin ? 'Sim' : 'Não'}
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex gap-2 justify-end">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => openEditUserDialog(user)}
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Editar
-                        </Button>
-                        
-                        {user.payment_status !== 'aprovado' && (
+                {filteredUsers.length > 0 ? (
+                  filteredUsers.map((user) => (
+                    <tr key={user.id} className="border-b border-white/5 hover:bg-white/5">
+                      <td className="py-3 px-4">{user.full_name || "Sem nome"}</td>
+                      <td className="py-3 px-4">{user.email}</td>
+                      <td className="py-3 px-4">{new Date(user.created_at).toLocaleDateString('pt-BR')}</td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          user.payment_status === 'aprovado' 
+                            ? 'bg-green-500/20 text-green-300' 
+                            : 'bg-yellow-500/20 text-yellow-300'
+                        }`}>
+                          {user.payment_status === 'aprovado' ? 'Aprovado' : 'Pendente'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        {user.is_admin ? 'Sim' : 'Não'}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex gap-2 justify-end">
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => approvePayment(user.id)}
+                            onClick={() => openEditUserDialog(user)}
                           >
-                            <CheckCheck className="h-4 w-4 mr-1" />
-                            Aprovar
+                            <Edit className="h-4 w-4 mr-1" />
+                            Editar
                           </Button>
-                        )}
-                        
-                        <Button 
-                          size="sm" 
-                          variant={user.is_admin ? "destructive" : "outline"}
-                          onClick={() => toggleAdminStatus(user.id, user.is_admin)}
-                        >
-                          {user.is_admin ? (
-                            <>
-                              <X className="h-4 w-4 mr-1" />
-                              Remover Admin
-                            </>
-                          ) : (
-                            <>
-                              <UserCheck className="h-4 w-4 mr-1" />
-                              Tornar Admin
-                            </>
+                          
+                          {user.payment_status !== 'aprovado' && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => approvePayment(user.id)}
+                            >
+                              <CheckCheck className="h-4 w-4 mr-1" />
+                              Aprovar
+                            </Button>
                           )}
-                        </Button>
-                      </div>
+                          
+                          <Button 
+                            size="sm" 
+                            variant={user.is_admin ? "destructive" : "outline"}
+                            onClick={() => toggleAdminStatus(user.id, user.is_admin)}
+                          >
+                            {user.is_admin ? (
+                              <>
+                                <X className="h-4 w-4 mr-1" />
+                                Remover Admin
+                              </>
+                            ) : (
+                              <>
+                                <UserCheck className="h-4 w-4 mr-1" />
+                                Tornar Admin
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-muted-foreground">
+                      {loading ? "Carregando usuários..." : "Nenhum usuário encontrado"}
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
