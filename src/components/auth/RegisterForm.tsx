@@ -1,9 +1,11 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function RegisterForm() {
   const { signUp } = useAuth();
@@ -14,16 +16,25 @@ export function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [formValidated, setFormValidated] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const validateForm = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
+    setErrorMessage("");
     
     if (password !== confirmPassword) {
       setErrorMessage("As senhas não coincidem.");
-      setIsLoading(false);
       return;
     }
+
+    // Formulário validado, mostra diálogo para pagamento
+    setFormValidated(true);
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmit = async () => {
+    setIsLoading(true);
     
     try {
       // Remove qualquer formatação do WhatsApp para armazenar só os números
@@ -36,12 +47,18 @@ export function RegisterForm() {
       setErrorMessage(error.message || 'Ocorreu um erro ao tentar fazer o cadastro.');
     } finally {
       setIsLoading(false);
+      setIsDialogOpen(false);
     }
+  };
+
+  const redirectToMercadoPago = () => {
+    // URL do Mercado Pago fornecida
+    window.location.href = "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=2c93808496006df9019639ee18ef20d6";
   };
 
   return (
     <div className="grid gap-6">
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={validateForm}>
         <div className="grid gap-4">
           <div className="space-y-2">
             <Label htmlFor="name">Nome completo</Label>
@@ -108,12 +125,36 @@ export function RegisterForm() {
             </div>
           )}
           
-          <Button type="submit" disabled={isLoading} className="w-full">
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Criar conta
+          <Button type="submit" className="w-full">
+            Prosseguir para pagamento
           </Button>
         </div>
       </form>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Pagamento da Assinatura</DialogTitle>
+            <DialogDescription>
+              Para finalizar seu cadastro, você será redirecionado para o Mercado Pago para realizar o pagamento da assinatura.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <p>
+              Após o pagamento, você terá acesso completo à nossa plataforma. Você pode pagar com cartão de crédito, boleto 
+              ou PIX (itau@ramelseg.com.br).
+            </p>
+            <div className="flex justify-between mt-4">
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={redirectToMercadoPago}>
+                Ir para pagamento
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

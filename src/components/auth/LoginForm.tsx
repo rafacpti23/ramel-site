@@ -30,28 +30,6 @@ export const LoginForm = ({ adminEmail, adminPassword }: LoginFormProps) => {
     }
   };
 
-  const handleAdminLogin = async () => {
-    setIsSubmitting(true);
-    try {
-      console.log("Tentando login como admin");
-      await signIn(adminEmail, adminPassword);
-      toast({
-        title: "Login com usuário admin",
-        description: "Usando credenciais de administrador padrão.",
-      });
-      // A navegação é feita no useEffect no componente Auth principal
-    } catch (error) {
-      console.error("Erro no login admin:", error);
-      toast({
-        title: "Usuário admin não encontrado",
-        description: "O usuário admin@admin.com ainda não foi criado. Use o botão abaixo para criar.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <form onSubmit={handleLogin}>
       <div className="space-y-4">
@@ -90,30 +68,6 @@ export const LoginForm = ({ adminEmail, adminPassword }: LoginFormProps) => {
             "Entrar"
           )}
         </Button>
-        
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-white/10" />
-          </div>
-          <div className="relative flex justify-center text-xs">
-            <span className="bg-card px-2 text-muted-foreground">
-              Acesso rápido para desenvolvedores
-            </span>
-          </div>
-        </div>
-        
-        <Button 
-          type="button" 
-          className="w-full" 
-          variant="outline"
-          onClick={handleAdminLogin}
-          disabled={isSubmitting}
-        >
-          Login como Admin Padrão
-        </Button>
-        <p className="text-xs text-center text-muted-foreground">
-          (Email: {adminEmail}, Senha: {adminPassword})
-        </p>
       </div>
     </form>
   );

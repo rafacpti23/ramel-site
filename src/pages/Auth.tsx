@@ -14,10 +14,6 @@ const Auth = () => {
   const { user, loading, isPaid } = useAuth();
   const navigate = useNavigate();
   
-  // Informações do usuário admin padrão
-  const adminEmail = "admin@admin.com";
-  const adminPassword = "123456";
-
   useEffect(() => {
     if (!loading && user) {
       // Adicionado log para debug
@@ -46,8 +42,8 @@ const Auth = () => {
         <TabsContent value="login" className="mt-4">
           <CardContent>
             <LoginForm 
-              adminEmail={adminEmail} 
-              adminPassword={adminPassword} 
+              adminEmail="" 
+              adminPassword="" 
             />
           </CardContent>
         </TabsContent>
@@ -58,8 +54,6 @@ const Auth = () => {
           </CardContent>
         </TabsContent>
       </Tabs>
-      
-      <AdminRegistrationInfo />
     </AuthLayout>
   );
 };
