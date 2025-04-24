@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -25,6 +24,7 @@ interface Ticket {
   user_id: string;
   user_email?: string | null;
   user_name?: string | null;
+  user_whatsapp?: string | null;
 }
 
 const AdminTicketsList = () => {
@@ -42,7 +42,6 @@ const AdminTicketsList = () => {
   const fetchTickets = async () => {
     try {
       setRefreshing(true);
-      // First, get all tickets
       const { data: ticketsData, error: ticketsError } = await supabase
         .from('support_tickets')
         .select('*')
@@ -57,19 +56,19 @@ const AdminTicketsList = () => {
         return;
       }
       
-      // Now get user details for each ticket
       const ticketsWithProfiles = await Promise.all(
         ticketsData.map(async (ticket) => {
           const { data: profileData } = await supabase
             .from('profiles')
-            .select('full_name, email')
+            .select('full_name, email, whatsapp')
             .eq('id', ticket.user_id)
             .single();
               
           return {
             ...ticket,
             user_name: profileData?.full_name || null,
-            user_email: profileData?.email || null
+            user_email: profileData?.email || null,
+            user_whatsapp: profileData?.whatsapp || null
           };
         })
       );
@@ -108,7 +107,6 @@ const AdminTicketsList = () => {
         description: `O ticket foi marcado como ${newStatus}.`,
       });
       
-      // Enviar webhook quando o ticket for fechado
       if (newStatus === "fechado" && config?.ticketCloseWebhookUrl && updatedTicket) {
         await sendWebhook(updatedTicket, newStatus);
       }
@@ -124,7 +122,6 @@ const AdminTicketsList = () => {
   
   const deleteTicket = async (ticketId: string) => {
     try {
-      // Primeiro excluir todas as respostas do ticket
       const { error: responsesError } = await supabase
         .from("ticket_responses")
         .delete()
@@ -132,7 +129,6 @@ const AdminTicketsList = () => {
       
       if (responsesError) throw responsesError;
       
-      // Depois excluir o ticket
       const { error: ticketError } = await supabase
         .from("support_tickets")
         .delete()
@@ -140,7 +136,6 @@ const AdminTicketsList = () => {
       
       if (ticketError) throw ticketError;
       
-      // Atualizar a lista de tickets
       setTickets(tickets.filter((ticket) => ticket.id !== ticketId));
       
       toast({
@@ -155,7 +150,7 @@ const AdminTicketsList = () => {
         variant: "destructive",
       });
     } finally {
-      setTicketToDelete(null); // Fechar o diálogo
+      setTicketToDelete(null);
     }
   };
   
@@ -168,10 +163,12 @@ const AdminTicketsList = () => {
         ticket: {
           id: ticket.id,
           title: ticket.title,
+          ticket_number: ticket.id.slice(0, 8),
           previous_status: ticket.status,
           new_status: newStatus,
           user_name: ticket.user_name || "Não identificado",
           user_email: ticket.user_email || "Não identificado",
+          user_whatsapp: ticket.user_whatsapp || "Não informado",
           closed_at: new Date().toISOString(),
         }
       };
@@ -182,13 +179,12 @@ const AdminTicketsList = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(webhookData),
-        mode: "no-cors", // Para evitar problemas de CORS
+        mode: "no-cors",
       });
       
       console.log("Webhook enviado com sucesso para ticket fechado", webhookData);
     } catch (error) {
       console.error("Erro ao enviar webhook:", error);
-      // Não exibir toast para não interromper o fluxo da aplicação
     }
   };
   
@@ -218,6 +214,7 @@ const AdminTicketsList = () => {
           <table className="w-full border-collapse">
             <thead>
               <tr className="border-b border-white/10">
+                <th className="text-left py-3 px-4">Nº</th>
                 <th className="text-left py-3 px-4">Título</th>
                 <th className="text-left py-3 px-4">Usuário</th>
                 <th className="text-left py-3 px-4">Data</th>
@@ -228,11 +225,20 @@ const AdminTicketsList = () => {
             <tbody>
               {tickets.map((ticket) => (
                 <tr key={ticket.id} className="border-b border-white/5 hover:bg-white/5">
+                  <td className="py-3 px-4">#{ticket.id.slice(0, 8)}</td>
                   <td className="py-3 px-4">{ticket.title}</td>
                   <td className="py-3 px-4">
                     {ticket.user_name || 'N/A'}
                     <br />
-                    <span className="text-xs text-muted-foreground">{ticket.user_email}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {ticket.user_email}
+                      {ticket.user_whatsapp && (
+                        <>
+                          <br />
+                          WhatsApp: {ticket.user_whatsapp}
+                        </>
+                      )}
+                    </span>
                   </td>
                   <td className="py-3 px-4">{new Date(ticket.created_at).toLocaleDateString('pt-BR')}</td>
                   <td className="py-3 px-4">
