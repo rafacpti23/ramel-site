@@ -1,8 +1,58 @@
 
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Server, Clock, Shield } from "lucide-react";
+import { Server, Clock, Shield, Zap } from "lucide-react";
+import { useSystemConfig } from "@/hooks/useSystemConfig";
 
 const PromotionSection = () => {
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+  const { config } = useSystemConfig();
+
+  useEffect(() => {
+    // Verificar se já existe um timestamp salvo no localStorage
+    const storedExpiry = localStorage.getItem('offerExpiryTime');
+    
+    if (storedExpiry) {
+      // Usar o timestamp existente
+      const expiryTime = parseInt(storedExpiry);
+      startCountdown(expiryTime);
+    } else {
+      // Criar novo timestamp (atual + 6 horas)
+      const expiryTime = Date.now() + (6 * 60 * 60 * 1000);
+      localStorage.setItem('offerExpiryTime', expiryTime.toString());
+      startCountdown(expiryTime);
+    }
+  }, []);
+
+  const startCountdown = (expiryTimestamp: number) => {
+    const updateCountdown = () => {
+      const now = Date.now();
+      const diff = expiryTimestamp - now;
+      
+      if (diff <= 0) {
+        setTimeRemaining(0);
+        clearInterval(intervalId);
+      } else {
+        setTimeRemaining(diff);
+      }
+    };
+    
+    // Atualizar imediatamente e depois a cada segundo
+    updateCountdown();
+    const intervalId = setInterval(updateCountdown, 1000);
+    
+    return () => clearInterval(intervalId);
+  };
+
+  const formatTime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
   return (
     <section className="py-16 bg-gradient-to-b from-background/20 to-background">
       <div className="container mx-auto px-4">
@@ -13,6 +63,23 @@ const PromotionSection = () => {
           </p>
         </div>
         
+        {timeRemaining !== null && timeRemaining > 0 && (
+          <div className="glass-card mb-8 p-4 bg-gradient-to-r from-ramel/80 to-ramel-dark/80 text-white border border-ramel/50 animate-pulse">
+            <div className="flex flex-col md:flex-row items-center justify-between">
+              <div className="flex items-center">
+                <Zap className="h-6 w-6 mr-2" />
+                <h3 className="text-xl font-bold">Oferta Especial: VPS com Portainer e Traefik GRÁTIS!</h3>
+              </div>
+              <div className="flex items-center mt-4 md:mt-0">
+                <Clock className="h-5 w-5 mr-2" />
+                <span className="font-mono text-lg font-bold">
+                  Expira em: {formatTime(timeRemaining)}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div className="grid md:grid-cols-3 gap-8">
           {/* Servidor VPS */}
           <div className="glass-card p-6 rounded-lg transition-transform hover:-translate-y-1 duration-300">
@@ -22,13 +89,13 @@ const PromotionSection = () => {
             
             <h3 className="text-xl font-bold mb-2">VPS Premium</h3>
             <div className="text-3xl font-bold mb-4">
-              R$ 59,90<span className="text-sm font-normal text-muted-foreground">/mês</span>
+              R$ 29,10<span className="text-sm font-normal text-muted-foreground">/mês</span>
             </div>
             
             <ul className="mb-6 space-y-2">
               <li className="flex items-start">
                 <span className="text-green-500 mr-2">✓</span>
-                <span>2 Cores</span>
+                <span>4 vCPU Cores</span>
               </li>
               <li className="flex items-start">
                 <span className="text-green-500 mr-2">✓</span>
@@ -36,15 +103,19 @@ const PromotionSection = () => {
               </li>
               <li className="flex items-start">
                 <span className="text-green-500 mr-2">✓</span>
-                <span>80GB SSD NVMe</span>
+                <span>100GB NVMe ou 200GB SSD</span>
               </li>
               <li className="flex items-start">
                 <span className="text-green-500 mr-2">✓</span>
-                <span>Tráfego Ilimitado</span>
+                <span>1 Snapshot</span>
               </li>
               <li className="flex items-start">
                 <span className="text-green-500 mr-2">✓</span>
-                <span>Painel de Controle</span>
+                <span>32TB Tráfego*</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-green-500 mr-2">✓</span>
+                <span>Entrada Ilimitada</span>
               </li>
             </ul>
             

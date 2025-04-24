@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import MemberHeader from "@/components/MemberHeader";
-import { Loader2, ArrowLeft, Plus, Video, X, Trash2 } from "lucide-react";
+import { Loader2, ArrowLeft, Plus, Video, X, Trash2, RefreshCw } from "lucide-react";
 
 interface VideoLesson {
   id: string;
@@ -22,6 +22,7 @@ interface VideoLesson {
   categories?: {
     name: string;
   };
+  thumbnail_url?: string;
 }
 
 interface Category {
@@ -37,6 +38,7 @@ const VideoManagement = () => {
   const [videos, setVideos] = useState<VideoLesson[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   
   // Form state
@@ -77,7 +79,18 @@ const VideoManagement = () => {
         .order('created_at', { ascending: false });
         
       if (videosError) throw videosError;
-      setVideos(videosData as VideoLesson[]);
+      
+      const videosWithThumbnails = videosData ? await Promise.all(
+        videosData.map(async (video) => {
+          const thumbnailUrl = await getVideoThumbnail(video.video_url);
+          return {
+            ...video,
+            thumbnail_url: thumbnailUrl
+          };
+        })
+      ) : [];
+      
+      setVideos(videosWithThumbnails as VideoLesson[]);
       
       // Fetch categories
       const { data: categoriesData, error: categoriesError } = await supabase
@@ -97,7 +110,40 @@ const VideoManagement = () => {
       });
     } finally {
       setLoadingData(false);
+      setRefreshing(false);
     }
+  };
+
+  const getVideoThumbnail = (url: string): string => {
+    try {
+      // YouTube
+      if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        const videoId = extractYouTubeID(url);
+        if (videoId) {
+          return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+        }
+      }
+      
+      // Vimeo
+      if (url.includes('vimeo.com')) {
+        // Note: Vimeo requires an API call to get the thumbnail,
+        // which is not feasible on the client-side due to CORS
+        // Using a placeholder for now
+        return 'https://i.vimeocdn.com/filter/overlay?src=https://i.vimeocdn.com/video/default_1280x720.jpg';
+      }
+      
+      // Default placeholder if no matching service
+      return '/placeholder.svg';
+    } catch (error) {
+      console.error("Error extracting video thumbnail:", error);
+      return '/placeholder.svg';
+    }
+  };
+  
+  const extractYouTubeID = (url: string): string | null => {
+    const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[7].length === 11) ? match[7] : null;
   };
   
   const handleAddVideo = async (e: React.FormEvent) => {
@@ -114,7 +160,7 @@ const VideoManagement = () => {
     
     setSubmitting(true);
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('video_lessons')
         .insert([
           {
@@ -123,7 +169,8 @@ const VideoManagement = () => {
             video_url: newVideoUrl,
             category_id: newVideoCategory
           }
-        ]);
+        ])
+        .select();
         
       if (error) throw error;
       
@@ -209,7 +256,18 @@ const VideoManagement = () => {
           <h1 className="text-3xl font-bold">Gerenciar Vídeo Aulas</h1>
         </div>
         
-        <div className="flex justify-end mb-6">
+        <div className="flex justify-between mb-6">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={fetchData} 
+            disabled={refreshing}
+            className="flex items-center gap-1"
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            {refreshing ? "Atualizando..." : "Atualizar Lista"}
+          </Button>
+          
           <Button onClick={() => setShowAddForm(!showAddForm)}>
             {showAddForm ? (
               <>
@@ -287,6 +345,26 @@ const VideoManagement = () => {
                   </select>
                 </div>
                 
+                {newVideoUrl && (
+                  <div className="space-y-2">
+                    <Label htmlFor="preview">Pré-visualização</Label>
+                    <div className="border border-border rounded-md p-4 bg-background/40">
+                      <p className="text-sm mb-2">Miniatura do vídeo:</p>
+                      <div className="max-w-xs mx-auto">
+                        <img 
+                          src={getVideoThumbnail(newVideoUrl)} 
+                          alt="Thumbnail Preview" 
+                          className="w-full h-auto rounded-md"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "/placeholder.svg";
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="flex justify-end gap-4 pt-4">
                   <Button 
                     type="button" 
@@ -335,60 +413,49 @@ const VideoManagement = () => {
                 </Button>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b border-white/10">
-                      <th className="text-left py-3 px-4">Título</th>
-                      <th className="text-left py-3 px-4">Categoria</th>
-                      <th className="text-left py-3 px-4">Data de Adição</th>
-                      <th className="text-left py-3 px-4">URL</th>
-                      <th className="text-right py-3 px-4">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {videos.map((video) => (
-                      <tr key={video.id} className="border-b border-white/5 hover:bg-white/5">
-                        <td className="py-3 px-4">
-                          <div>
-                            <p className="font-medium">{video.title}</p>
-                            {video.description && (
-                              <p className="text-sm text-muted-foreground mt-1">
-                                {video.description}
-                              </p>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {videos.map((video) => (
+                  <Card key={video.id} className="overflow-hidden h-full flex flex-col">
+                    <div className="relative aspect-video">
+                      <img 
+                        src={video.thumbnail_url || '/placeholder.svg'} 
+                        alt={video.title} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/placeholder.svg";
+                        }}
+                      />
+                      <a 
+                        href={video.video_url}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity"
+                      >
+                        <Video className="h-12 w-12 text-white" />
+                      </a>
+                    </div>
+                    <CardContent className="py-4 flex-1 flex flex-col">
+                      <h3 className="font-medium text-lg mb-1">{video.title}</h3>
+                      <p className="text-sm text-muted-foreground mb-2 flex-1">
+                        {video.description || "Sem descrição"}
+                      </p>
+                      <div className="flex items-center justify-between mt-auto">
+                        <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">
                           {video.categories?.name || "Sem categoria"}
-                        </td>
-                        <td className="py-3 px-4">
-                          {new Date(video.created_at).toLocaleDateString('pt-BR')}
-                        </td>
-                        <td className="py-3 px-4">
-                          <a 
-                            href={video.video_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-ramel hover:underline truncate max-w-xs inline-block"
-                          >
-                            {video.video_url}
-                          </a>
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <Button 
-                            variant="destructive" 
-                            size="sm"
-                            onClick={() => handleDeleteVideo(video.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Excluir</span>
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        </span>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteVideo(video.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Excluir</span>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             )}
           </CardContent>

@@ -55,3 +55,4 @@ trusted_cors_origins = ["http://localhost:3000"]
 [functions]
 [functions.mercado-pago-webhook]
 verify_jwt = false
+
