@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import MemberHeader from "@/components/MemberHeader";
-import { Loader2 } from "lucide-react";
+import { Loader2, ExternalLink } from "lucide-react";
 
 interface Category {
   id: string;
@@ -29,6 +29,7 @@ interface VideoLesson {
   description: string | null;
   video_url: string;
   category_id: string;
+  thumbnail_url?: string;
 }
 
 const MemberArea = () => {
@@ -83,13 +84,54 @@ const MemberArea = () => {
         .select('*');
         
       if (videosError) throw videosError;
-      setVideoLessons(videosData || []);
+      
+      // Adicionar miniaturas aos vídeos
+      const videosWithThumbnails = videosData ? await Promise.all(
+        videosData.map(async (video) => {
+          const thumbnailUrl = await getVideoThumbnail(video.video_url);
+          return {
+            ...video,
+            thumbnail_url: thumbnailUrl
+          };
+        })
+      ) : [];
+      
+      setVideoLessons(videosWithThumbnails);
       
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
     } finally {
       setLoadingData(false);
     }
+  };
+  
+  // Função para obter thumbnail de vídeos (mesma do VideoManagement)
+  const getVideoThumbnail = (url: string): string => {
+    try {
+      // YouTube
+      if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        const videoId = extractYouTubeID(url);
+        if (videoId) {
+          return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+        }
+      }
+      
+      // Vimeo
+      if (url.includes('vimeo.com')) {
+        return 'https://i.vimeocdn.com/filter/overlay?src=https://i.vimeocdn.com/video/default_1280x720.jpg';
+      }
+      
+      return '/placeholder.svg';
+    } catch (error) {
+      console.error("Error extracting video thumbnail:", error);
+      return '/placeholder.svg';
+    }
+  };
+  
+  const extractYouTubeID = (url: string): string | null => {
+    const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[7].length === 11) ? match[7] : null;
   };
   
   if (loading || loadingData) {
@@ -191,21 +233,38 @@ const MemberArea = () => {
                             Nenhum vídeo disponível nesta categoria.
                           </p>
                         ) : (
-                          <ul className="space-y-3">
+                          <ul className="space-y-4">
                             {categoryVideos.map((video) => (
                               <li key={video.id}>
                                 <a 
                                   href={video.video_url} 
                                   target="_blank" 
                                   rel="noopener noreferrer"
-                                  className="flex flex-col p-3 rounded-md border border-white/10 hover:bg-white/5 transition-colors"
+                                  className="block group"
                                 >
-                                  <span className="font-medium">{video.title}</span>
-                                  {video.description && (
-                                    <span className="text-sm text-muted-foreground mt-1">
-                                      {video.description}
-                                    </span>
-                                  )}
+                                  <div className="relative aspect-video mb-2 overflow-hidden rounded-md">
+                                    <img 
+                                      src={video.thumbnail_url || '/placeholder.svg'} 
+                                      alt={video.title}
+                                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                      onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.src = "/placeholder.svg";
+                                      }}
+                                    />
+                                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                      <ExternalLink className="text-white h-10 w-10" />
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="p-2">
+                                    <h4 className="font-medium group-hover:text-ramel transition-colors">{video.title}</h4>
+                                    {video.description && (
+                                      <p className="text-sm text-muted-foreground mt-1">
+                                        {video.description}
+                                      </p>
+                                    )}
+                                  </div>
                                 </a>
                               </li>
                             ))}

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -41,7 +40,6 @@ const VideoManagement = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   
-  // Form state
   const [newVideoTitle, setNewVideoTitle] = useState("");
   const [newVideoDesc, setNewVideoDesc] = useState("");
   const [newVideoUrl, setNewVideoUrl] = useState("");
@@ -72,7 +70,6 @@ const VideoManagement = () => {
   const fetchData = async () => {
     setLoadingData(true);
     try {
-      // Fetch videos
       const { data: videosData, error: videosError } = await supabase
         .from('video_lessons')
         .select('*, categories(name)')
@@ -92,7 +89,6 @@ const VideoManagement = () => {
       
       setVideos(videosWithThumbnails as VideoLesson[]);
       
-      // Fetch categories
       const { data: categoriesData, error: categoriesError } = await supabase
         .from('categories')
         .select('*')
@@ -116,7 +112,6 @@ const VideoManagement = () => {
 
   const getVideoThumbnail = (url: string): string => {
     try {
-      // YouTube
       if (url.includes('youtube.com') || url.includes('youtu.be')) {
         const videoId = extractYouTubeID(url);
         if (videoId) {
@@ -124,15 +119,10 @@ const VideoManagement = () => {
         }
       }
       
-      // Vimeo
       if (url.includes('vimeo.com')) {
-        // Note: Vimeo requires an API call to get the thumbnail,
-        // which is not feasible on the client-side due to CORS
-        // Using a placeholder for now
         return 'https://i.vimeocdn.com/filter/overlay?src=https://i.vimeocdn.com/video/default_1280x720.jpg';
       }
       
-      // Default placeholder if no matching service
       return '/placeholder.svg';
     } catch (error) {
       console.error("Error extracting video thumbnail:", error);
@@ -160,18 +150,13 @@ const VideoManagement = () => {
     
     setSubmitting(true);
     try {
-      const { data, error } = await supabase
-        .from('video_lessons')
-        .insert([
-          {
-            title: newVideoTitle,
-            description: newVideoDesc || null,
-            video_url: newVideoUrl,
-            category_id: newVideoCategory
-          }
-        ])
-        .select();
-        
+      const { data, error } = await supabase.rpc('admin_insert_video', {
+        p_title: newVideoTitle,
+        p_description: newVideoDesc || null,
+        p_video_url: newVideoUrl,
+        p_category_id: newVideoCategory
+      });
+      
       if (error) throw error;
       
       toast({
@@ -180,8 +165,7 @@ const VideoManagement = () => {
       });
       
       resetForm();
-      fetchData(); // Recarregar a lista após adicionar
-      
+      fetchData();
     } catch (error: any) {
       console.error('Erro ao adicionar vídeo:', error);
       toast({
@@ -200,11 +184,10 @@ const VideoManagement = () => {
     }
     
     try {
-      const { error } = await supabase
-        .from('video_lessons')
-        .delete()
-        .eq('id', videoId);
-        
+      const { error } = await supabase.rpc('admin_delete_video', {
+        p_video_id: videoId
+      });
+      
       if (error) throw error;
       
       setVideos(videos.filter(video => video.id !== videoId));

@@ -17,9 +17,9 @@ export function RegisterForm() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [formValidated, setFormValidated] = useState(false);
+  const [userRegistered, setUserRegistered] = useState(false);
 
-  const validateForm = (e: React.FormEvent<HTMLFormElement>) => {
+  const validateForm = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage("");
     
@@ -28,26 +28,25 @@ export function RegisterForm() {
       return;
     }
 
-    // Formulário validado, mostra diálogo para pagamento
-    setFormValidated(true);
-    setIsDialogOpen(true);
-  };
-
-  const handleSubmit = async () => {
     setIsLoading(true);
     
     try {
       // Remove qualquer formatação do WhatsApp para armazenar só os números
       const cleanWhatsapp = whatsapp.replace(/\D/g, '');
       
+      // Realizar o cadastro antes de mostrar o diálogo de pagamento
       await signUp(email, password, fullName, cleanWhatsapp);
-      // A navegação será tratada no AuthContext após o login bem-sucedido
+      
+      // Indica que o usuário foi registrado com sucesso
+      setUserRegistered(true);
+      
+      // Mostrar diálogo de pagamento
+      setIsDialogOpen(true);
     } catch (error: any) {
       console.error('Erro de cadastro:', error);
       setErrorMessage(error.message || 'Ocorreu um erro ao tentar fazer o cadastro.');
     } finally {
       setIsLoading(false);
-      setIsDialogOpen(false);
     }
   };
 
@@ -125,8 +124,15 @@ export function RegisterForm() {
             </div>
           )}
           
-          <Button type="submit" className="w-full">
-            Prosseguir para pagamento
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Registrando...
+              </>
+            ) : (
+              userRegistered ? "Continuar para pagamento" : "Cadastrar"
+            )}
           </Button>
         </div>
       </form>
@@ -146,7 +152,7 @@ export function RegisterForm() {
             </p>
             <div className="flex justify-between mt-4">
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancelar
+                Fechar
               </Button>
               <Button onClick={redirectToMercadoPago}>
                 Ir para pagamento
