@@ -84,12 +84,7 @@ const SystemConfig = () => {
           </TabsList>
           
           <TabsContent value="webhooks">
-            <WebhooksTab 
-              webhookContactForm={webhookContactForm}
-              setWebhookContactForm={setWebhookContactForm}
-              webhookTicketResponse={webhookTicketResponse}
-              setWebhookTicketResponse={setWebhookTicketResponse}
-            />
+            <WebhooksTab />
           </TabsContent>
           
           <TabsContent value="chat">

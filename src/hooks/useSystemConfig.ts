@@ -5,16 +5,17 @@ import { toast } from "@/hooks/use-toast";
 import { LiveChatService } from "@/services/LiveChatService";
 
 // Define the interface for system config data
-interface SystemConfigData {
+export interface SystemConfigData {
   id: string;
   webhook_contact_form: string | null;
   webhook_ticket_response: string | null;
   live_chat_code: string | null;
   updated_at: string | null;
   updated_by: string | null;
-  // Add additional fields with correct types
   live_chat_enabled: boolean;
   chat_button_text: string;
+  contactFormWebhookUrl?: string;
+  ticketCloseWebhookUrl?: string;
 }
 
 // Utility function to validate URLs
@@ -36,6 +37,7 @@ export const useSystemConfig = () => {
   const [liveChatCode, setLiveChatCode] = useState("");
   const [liveChatEnabled, setLiveChatEnabled] = useState(true);
   const [chatButtonText, setChatButtonText] = useState("Estamos aqui!");
+  const [config, setConfig] = useState<SystemConfigData | null>(null);
   
   const fetchConfig = async () => {
     try {
@@ -64,6 +66,13 @@ export const useSystemConfig = () => {
             ? (data.chat_button_text as string) 
             : "Estamos aqui!"
         );
+
+        // Set the config object with webhook URLs for components
+        setConfig({
+          ...data,
+          contactFormWebhookUrl: data.webhook_contact_form || "",
+          ticketCloseWebhookUrl: data.webhook_ticket_response || ""
+        });
       }
     } catch (error) {
       console.error('Erro ao carregar configurações:', error);
@@ -139,6 +148,19 @@ export const useSystemConfig = () => {
       }
       
       if (result.error) throw result.error;
+
+      // Update config object after saving
+      setConfig({
+        ...(config || {}),
+        webhook_contact_form: webhookContactForm,
+        webhook_ticket_response: webhookTicketResponse,
+        live_chat_code: liveChatCode,
+        live_chat_enabled: liveChatEnabled,
+        chat_button_text: chatButtonText,
+        contactFormWebhookUrl: webhookContactForm,
+        ticketCloseWebhookUrl: webhookTicketResponse,
+        updated_at: new Date().toISOString()
+      } as SystemConfigData);
       
       toast({
         title: "Configurações salvas",
@@ -158,6 +180,20 @@ export const useSystemConfig = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  // Add updateConfig function
+  const updateConfig = async (configData: Partial<SystemConfigData>) => {
+    // Update local state
+    if (configData.contactFormWebhookUrl !== undefined) {
+      setWebhookContactForm(configData.contactFormWebhookUrl);
+    }
+    if (configData.ticketCloseWebhookUrl !== undefined) {
+      setWebhookTicketResponse(configData.ticketCloseWebhookUrl);
+    }
+    
+    // Save the updated configuration
+    return saveConfig();
   };
 
   useEffect(() => {
@@ -184,6 +220,8 @@ export const useSystemConfig = () => {
     setLiveChatEnabled,
     chatButtonText,
     setChatButtonText,
-    saveConfig
+    saveConfig,
+    config,
+    updateConfig
   };
 };

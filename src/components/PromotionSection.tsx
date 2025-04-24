@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Server, Clock, Shield, Zap } from "lucide-react";
@@ -6,7 +5,7 @@ import { useSystemConfig } from "@/hooks/useSystemConfig";
 
 const PromotionSection = () => {
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
-  const { config } = useSystemConfig();
+  const { webhookContactForm } = useSystemConfig();
 
   useEffect(() => {
     // Verificar se já existe um timestamp salvo no localStorage
