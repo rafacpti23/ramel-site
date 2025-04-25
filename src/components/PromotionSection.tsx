@@ -26,8 +26,8 @@ const PromotionSection = () => {
   }, []);
 
   const startCountdown = (expiryTimestamp: number) => {
-    // Fix: Define updateCountdown function after intervalId is declared
-    let intervalId: number;
+    // Fix: Use NodeJS.Timeout type instead of number
+    let intervalId: NodeJS.Timeout;
     
     const updateCountdown = () => {
       const now = Date.now();
