@@ -26,6 +26,9 @@ const PromotionSection = () => {
   }, []);
 
   const startCountdown = (expiryTimestamp: number) => {
+    // Fix: Define updateCountdown function after intervalId is declared
+    let intervalId: number;
+    
     const updateCountdown = () => {
       const now = Date.now();
       const diff = expiryTimestamp - now;
@@ -40,7 +43,7 @@ const PromotionSection = () => {
     
     // Atualizar imediatamente e depois a cada segundo
     updateCountdown();
-    const intervalId = setInterval(updateCountdown, 1000);
+    intervalId = setInterval(updateCountdown, 1000);
     
     return () => clearInterval(intervalId);
   };
