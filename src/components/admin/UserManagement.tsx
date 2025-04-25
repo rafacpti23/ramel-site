@@ -55,15 +55,30 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      
+      console.log("Fetching users from database...");
+      
+      // Remove any page limit to ensure we get all users
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching users:", error);
+        throw error;
+      }
       
-      console.log(`Carregados ${data.length} usuários do banco de dados`);
-      setUsers(data as ExtendedUserProfile[]);
+      console.log(`Carregados ${data?.length || 0} usuários do banco de dados`);
+      
+      if (!data || data.length === 0) {
+        console.log("No users found in database or query returned empty");
+      } else {
+        console.log("First user example:", data[0]);
+      }
+      
+      setUsers(data as ExtendedUserProfile[] || []);
+      
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
       toast({

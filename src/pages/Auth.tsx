@@ -13,6 +13,7 @@ import { LoadingScreen } from "@/components/auth/LoadingScreen";
 const Auth = () => {
   const { user, loading, isPaid } = useAuth();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("login");
   
   useEffect(() => {
     if (!loading && user) {
@@ -33,7 +34,7 @@ const Auth = () => {
   
   return (
     <AuthLayout>
-      <Tabs defaultValue="login" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-2 w-full">
           <TabsTrigger value="login">Login</TabsTrigger>
           <TabsTrigger value="register">Cadastro</TabsTrigger>

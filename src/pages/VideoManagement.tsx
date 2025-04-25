@@ -70,12 +70,17 @@ const VideoManagement = () => {
   const fetchData = async () => {
     setLoadingData(true);
     try {
+      console.log("Fetching video data...");
       const { data: videosData, error: videosError } = await supabase
         .from('video_lessons')
-        .select('*, categories(name)')
-        .order('created_at', { ascending: false });
+        .select('*, categories(name)');
         
-      if (videosError) throw videosError;
+      if (videosError) {
+        console.error("Error fetching videos:", videosError);
+        throw videosError;
+      }
+      
+      console.log("Videos fetched:", videosData);
       
       const videosWithThumbnails = videosData ? await Promise.all(
         videosData.map(async (video) => {
@@ -94,7 +99,12 @@ const VideoManagement = () => {
         .select('*')
         .order('name');
         
-      if (categoriesError) throw categoriesError;
+      if (categoriesError) {
+        console.error("Error fetching categories:", categoriesError);
+        throw categoriesError;
+      }
+      
+      console.log("Categories fetched:", categoriesData);
       setCategories(categoriesData as Category[]);
       
     } catch (error) {
