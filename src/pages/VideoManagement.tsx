@@ -152,7 +152,7 @@ const VideoManagement = () => {
     try {
       const { data, error } = await supabase.rpc('admin_insert_video', {
         p_title: newVideoTitle,
-        p_description: newVideoDesc || null,
+        p_description: newVideoDesc,
         p_video_url: newVideoUrl,
         p_category_id: newVideoCategory
       });

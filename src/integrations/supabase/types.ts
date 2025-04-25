@@ -269,7 +269,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      admin_delete_video: {
+        Args: { p_video_id: string }
+        Returns: undefined
+      }
+      admin_insert_video: {
+        Args: {
+          p_title: string
+          p_description: string
+          p_video_url: string
+          p_category_id: string
+        }
+        Returns: string
+      }
+      approve_user_payment: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -52,7 +51,6 @@ const MemberArea = () => {
       return;
     }
     
-    // Carregar dados quando o usuário estiver autenticado e for pagante
     if (!loading && user && isPaid) {
       fetchData();
     }
@@ -61,7 +59,6 @@ const MemberArea = () => {
   const fetchData = async () => {
     setLoadingData(true);
     try {
-      // Buscar categorias
       const { data: categoriesData, error: categoriesError } = await supabase
         .from('categories')
         .select('*')
@@ -70,7 +67,6 @@ const MemberArea = () => {
       if (categoriesError) throw categoriesError;
       setCategories(categoriesData || []);
       
-      // Buscar arquivos
       const { data: filesData, error: filesError } = await supabase
         .from('support_files')
         .select('*');
@@ -78,14 +74,12 @@ const MemberArea = () => {
       if (filesError) throw filesError;
       setSupportFiles(filesData || []);
       
-      // Buscar vídeos
       const { data: videosData, error: videosError } = await supabase
         .from('video_lessons')
         .select('*');
         
       if (videosError) throw videosError;
       
-      // Adicionar miniaturas aos vídeos
       const videosWithThumbnails = videosData ? await Promise.all(
         videosData.map(async (video) => {
           const thumbnailUrl = await getVideoThumbnail(video.video_url);
@@ -105,10 +99,8 @@ const MemberArea = () => {
     }
   };
   
-  // Função para obter thumbnail de vídeos (mesma do VideoManagement)
   const getVideoThumbnail = (url: string): string => {
     try {
-      // YouTube
       if (url.includes('youtube.com') || url.includes('youtu.be')) {
         const videoId = extractYouTubeID(url);
         if (videoId) {
@@ -116,7 +108,6 @@ const MemberArea = () => {
         }
       }
       
-      // Vimeo
       if (url.includes('vimeo.com')) {
         return 'https://i.vimeocdn.com/filter/overlay?src=https://i.vimeocdn.com/video/default_1280x720.jpg';
       }
