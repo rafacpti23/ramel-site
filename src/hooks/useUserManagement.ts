@@ -105,6 +105,75 @@ export const useUserManagement = () => {
     }
   };
 
+  const deleteUser = async (userId: string) => {
+    try {
+      // Primeiro remover dados relacionados ao usuário
+      
+      // Remover tickets e respostas de tickets
+      const { data: tickets } = await supabase
+        .from('support_tickets')
+        .select('id')
+        .eq('user_id', userId);
+        
+      if (tickets && tickets.length > 0) {
+        const ticketIds = tickets.map(ticket => ticket.id);
+        
+        // Excluir respostas de tickets
+        await supabase
+          .from('ticket_responses')
+          .delete()
+          .in('ticket_id', ticketIds);
+          
+        // Excluir tickets
+        await supabase
+          .from('support_tickets')
+          .delete()
+          .eq('user_id', userId);
+      }
+      
+      // Remover assinantes
+      await supabase
+        .from('subscribers')
+        .delete()
+        .eq('user_id', userId);
+        
+      // Remover perfil
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+        
+      if (profileError) throw profileError;
+      
+      // Remover usuário da autenticação
+      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+      
+      if (authError) {
+        throw authError;
+      }
+      
+      // Atualizar estado local
+      setUsers(users.filter(user => user.id !== userId));
+      
+      toast({
+        title: "Usuário excluído",
+        description: "O usuário foi excluído com sucesso do sistema.",
+      });
+      
+      return true;
+    } catch (error: any) {
+      console.error('Erro ao excluir usuário:', error);
+      
+      toast({
+        title: "Erro ao excluir usuário",
+        description: error.message || "Não foi possível excluir o usuário. Tente novamente.",
+        variant: "destructive",
+      });
+      
+      return false;
+    }
+  };
+
   const openEditUserDialog = (userProfile: ExtendedUserProfile) => {
     setEditingUser(userProfile);
     setEditUserName(userProfile.full_name || "");
@@ -192,5 +261,6 @@ export const useUserManagement = () => {
     toggleAdminStatus,
     openEditUserDialog,
     handleSaveUserEdit,
+    deleteUser,
   };
 };

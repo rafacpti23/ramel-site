@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { CheckCheck, Edit, UserCheck, X } from "lucide-react";
+import { CheckCheck, Edit, UserCheck, X, Trash2 } from "lucide-react";
 import { ExtendedUserProfile } from "@/types/user";
 
 interface UsersTableProps {
@@ -9,6 +9,7 @@ interface UsersTableProps {
   onEdit: (user: ExtendedUserProfile) => void;
   onApprovePayment: (userId: string) => void;
   onToggleAdmin: (userId: string, currentStatus: boolean) => void;
+  onDelete: (userId: string) => void;
 }
 
 const UsersTable = ({
@@ -16,6 +17,7 @@ const UsersTable = ({
   onEdit,
   onApprovePayment,
   onToggleAdmin,
+  onDelete,
 }: UsersTableProps) => {
   return (
     <div className="overflow-x-auto">
@@ -86,6 +88,15 @@ const UsersTable = ({
                         Tornar Admin
                       </>
                     )}
+                  </Button>
+                  
+                  <Button 
+                    size="sm" 
+                    variant="destructive"
+                    onClick={() => onDelete(user.id)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Excluir
                   </Button>
                 </div>
               </td>

@@ -1,11 +1,21 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useUserManagement } from "@/hooks/useUserManagement";
 import UsersTable from "./users/UsersTable";
 import UserEditDialog from "./users/UserEditDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const UserManagement = () => {
   const {
@@ -30,7 +40,23 @@ const UserManagement = () => {
     toggleAdminStatus,
     openEditUserDialog,
     handleSaveUserEdit,
+    deleteUser,
   } = useUserManagement();
+
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
+
+  const handleDeleteUser = async () => {
+    if (userToDelete) {
+      const success = await deleteUser(userToDelete);
+      if (success) {
+        setUserToDelete(null);
+      }
+    }
+  };
+
+  const confirmDeleteUser = (userId: string) => {
+    setUserToDelete(userId);
+  };
 
   return (
     <Card className="glass-card">
@@ -67,6 +93,7 @@ const UserManagement = () => {
             onEdit={openEditUserDialog}
             onApprovePayment={approvePayment}
             onToggleAdmin={toggleAdminStatus}
+            onDelete={confirmDeleteUser}
           />
         ) : (
           <div className="py-8 text-center text-muted-foreground">
@@ -89,6 +116,30 @@ const UserManagement = () => {
         onWhatsappChange={setEditUserWhatsapp}
         onSave={handleSaveUserEdit}
       />
+
+      <AlertDialog 
+        open={!!userToDelete} 
+        onOpenChange={(open) => !open && setUserToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Usuário</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.
+              Todos os dados associados a este usuário também serão excluídos, incluindo tickets de suporte.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteUser}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };

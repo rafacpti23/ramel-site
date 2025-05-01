@@ -94,6 +94,7 @@ export const useTickets = () => {
 
   const deleteTicket = async (ticketId: string) => {
     try {
+      // Primeiro exclui as respostas relacionadas ao ticket
       const { error: responsesError } = await supabase
         .from("ticket_responses")
         .delete()
@@ -101,6 +102,7 @@ export const useTickets = () => {
       
       if (responsesError) throw responsesError;
       
+      // Depois exclui o ticket em si
       const { error: ticketError } = await supabase
         .from("support_tickets")
         .delete()
@@ -108,6 +110,7 @@ export const useTickets = () => {
       
       if (ticketError) throw ticketError;
       
+      // Atualiza o estado local removendo o ticket excluído
       setTickets(tickets.filter((ticket) => ticket.id !== ticketId));
       
       toast({
