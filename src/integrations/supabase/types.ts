@@ -270,7 +270,7 @@ export type Database = {
     }
     Functions: {
       admin_delete_video: {
-        Args: { p_video_id: string }
+        Args: { p_video_id: string } | { video_id: number }
         Returns: undefined
       }
       admin_insert_video: {
