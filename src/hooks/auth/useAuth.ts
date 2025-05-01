@@ -23,7 +23,7 @@ export const useAuth = () => {
     setIsPaid,
   } = useAuthState();
   
-  const actions = useAuthActions({ setUser, setSession, setUserProfile, setIsAdmin, setIsPaid, setLoading });
+  const actions = useAuthActions();
 
   useEffect(() => {
     // Verifica se há uma sessão ativa
@@ -102,6 +102,28 @@ export const useAuth = () => {
     };
   }, []);
 
+  const redirectToStripe = async () => {
+    if (!session) return null;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: {},
+      });
+      
+      if (error) throw error;
+      
+      if (data?.url) {
+        window.location.href = data.url;
+        return true;
+      } else {
+        throw new Error("Falha ao obter URL de checkout");
+      }
+    } catch (error) {
+      console.error("Erro ao redirecionar para o Stripe:", error);
+      return false;
+    }
+  };
+
   return {
     user,
     session,
@@ -110,26 +132,6 @@ export const useAuth = () => {
     isAdmin,
     isPaid,
     ...actions,
-    redirectToStripe: async () => {
-      if (!session) return null;
-      
-      try {
-        const { data, error } = await supabase.functions.invoke("create-checkout", {
-          body: {},
-        });
-        
-        if (error) throw error;
-        
-        if (data?.url) {
-          window.location.href = data.url;
-          return true;
-        } else {
-          throw new Error("Falha ao obter URL de checkout");
-        }
-      } catch (error) {
-        console.error("Erro ao redirecionar para o Stripe:", error);
-        return false;
-      }
-    }
+    redirectToStripe
   };
 };

@@ -19,4 +19,5 @@ export interface AuthContextType {
   signOut: () => Promise<void>;
   isAdmin: boolean;
   isPaid: boolean;
+  redirectToStripe: () => Promise<boolean | null>;
 }
