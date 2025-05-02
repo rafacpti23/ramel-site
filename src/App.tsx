@@ -29,8 +29,8 @@ function App() {
           <Route path="/produtos/agendapro" element={<AgendaPro />} />
           <Route path="/produtos/agenda-pro-plus" element={<AgendaProPlus />} />
           <Route path="/membro" element={<MemberArea />} />
-          <Route path="/membro/arquivo" element={<FileManagement />} />
-          <Route path="/membro/videos" element={<VideoManagement />} />
+          <Route path="/membro/admin/arquivos" element={<FileManagement />} />
+          <Route path="/membro/admin/videos" element={<VideoManagement />} />
           <Route path="/membro/suporte" element={<SupportPage />} />
           <Route path="/membro/suporte/:ticketId" element={<TicketDetail />} />
           <Route path="/membro/admin" element={<AdminPage />} />
