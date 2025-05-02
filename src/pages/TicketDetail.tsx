@@ -4,40 +4,37 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useTickets } from "@/hooks/useTickets";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import MemberHeader from "@/components/MemberHeader";
-import { ArrowLeft, Loader2, Send, Lock } from "lucide-react";
+import { ArrowLeft, Send, MessageSquare, Check, Clock, AlertCircle, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
-interface Ticket {
+interface Message {
   id: string;
-  title: string;
-  description: string;
-  status: string;
-  created_at: string;
+  ticket_id: string;
   user_id: string;
-}
-
-interface TicketResponse {
-  id: string;
-  content: string;
   is_admin: boolean;
+  content: string;
   created_at: string;
-  user_id: string;
+  user_name?: string;
 }
 
 const TicketDetail = () => {
-  const { ticketId } = useParams<{ ticketId: string }>();
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { ticketId } = useParams<{ ticketId: string }>();
+  const { getTicket, addMessage, closeTicket } = useTickets();
   
-  const [ticket, setTicket] = useState<Ticket | null>(null);
-  const [responses, setResponses] = useState<TicketResponse[]>([]);
-  const [newResponse, setNewResponse] = useState("");
-  const [loadingData, setLoadingData] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [hasPermission, setHasPermission] = useState(false);
+  const [ticket, setTicket] = useState<any>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     if (!loading && !user) {
@@ -45,170 +42,133 @@ const TicketDetail = () => {
       return;
     }
     
-    if (!loading && user && ticketId) {
-      fetchTicketData();
+    if (ticketId) {
+      loadTicketData();
     }
   }, [user, loading, ticketId, navigate]);
   
-  const fetchTicketData = async () => {
-    setLoadingData(true);
+  const loadTicketData = async () => {
+    if (!ticketId) return;
+    
+    setIsLoading(true);
     try {
-      // Buscar informações do ticket
-      const { data: ticketData, error: ticketError } = await supabase
-        .from('support_tickets')
-        .select('*')
-        .eq('id', ticketId)
-        .single();
-        
-      if (ticketError) throw ticketError;
-      setTicket(ticketData as Ticket);
-      
-      // Verificar permissão (admin vê tudo, usuário só vê seus próprios tickets)
-      const hasAccess = isAdmin || (ticketData.user_id === user?.id);
-      setHasPermission(hasAccess);
-      
-      if (!hasAccess) {
+      const data = await getTicket(ticketId);
+      if (data) {
+        setTicket(data.ticket);
+        setMessages(data.messages);
+      } else {
         toast({
-          title: "Acesso negado",
-          description: "Você não tem permissão para visualizar este ticket.",
+          title: "Ticket não encontrado",
+          description: "O ticket solicitado não existe ou foi removido.",
           variant: "destructive",
         });
         navigate("/membro/suporte");
-        return;
       }
-      
-      // Buscar respostas do ticket
-      const { data: responsesData, error: responsesError } = await supabase
-        .from('ticket_responses')
-        .select('*')
-        .eq('ticket_id', ticketId)
-        .order('created_at', { ascending: true });
-        
-      if (responsesError) throw responsesError;
-      setResponses(responsesData as TicketResponse[]);
-      
     } catch (error) {
-      console.error('Erro ao carregar dados do ticket:', error);
+      console.error("Erro ao carregar ticket:", error);
       toast({
-        title: "Erro ao carregar ticket",
+        title: "Erro",
         description: "Não foi possível carregar os detalhes do ticket.",
         variant: "destructive",
       });
-      navigate("/membro/suporte");
     } finally {
-      setLoadingData(false);
+      setIsLoading(false);
     }
   };
   
-  const handleSubmitResponse = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newResponse.trim() || !user) return;
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !ticketId) return;
     
-    // Verificar se o ticket está fechado
-    if (ticket?.status === 'fechado' && !isAdmin) {
+    setIsSending(true);
+    try {
+      const addedMessage = await addMessage({
+        ticket_id: ticketId,
+        content: newMessage,
+      });
+      
+      setMessages([...messages, addedMessage]);
+      setNewMessage("");
+      
+      // Reload ticket data to get updated status
+      loadTicketData();
+    } catch (error) {
+      console.error("Erro ao enviar mensagem:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível enviar sua mensagem.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
+  
+  const handleCloseTicket = async () => {
+    if (!ticketId) return;
+    
+    setIsClosing(true);
+    try {
+      await closeTicket(ticketId);
+      
       toast({
         title: "Ticket fechado",
-        description: "Este ticket já foi fechado e não pode receber novas respostas.",
-        variant: "destructive",
+        description: "O ticket foi fechado com sucesso.",
       });
-      return;
-    }
-    
-    // Verificar se o usuário é o dono do ticket ou admin
-    if (!isAdmin && ticket?.user_id !== user.id) {
+      
+      // Reload ticket data
+      loadTicketData();
+    } catch (error) {
+      console.error("Erro ao fechar ticket:", error);
       toast({
-        title: "Permissão negada",
-        description: "Você não tem permissão para responder este ticket.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setSubmitting(true);
-    try {
-      const { data, error } = await supabase
-        .from('ticket_responses')
-        .insert([
-          {
-            ticket_id: ticketId,
-            user_id: user.id,
-            content: newResponse,
-            is_admin: isAdmin
-          }
-        ])
-        .select();
-        
-      if (error) throw error;
-      
-      // Se é admin e o ticket está aberto, atualize o status para respondido
-      if (isAdmin && ticket?.status === 'aberto') {
-        const { error: updateError } = await supabase
-          .from('support_tickets')
-          .update({ status: 'respondido' })
-          .eq('id', ticketId);
-          
-        if (updateError) throw updateError;
-        
-        setTicket(prev => prev ? {...prev, status: 'respondido'} : null);
-      }
-      
-      // Se é admin, permita fechar o ticket
-      if (isAdmin && newResponse.toLowerCase().includes('#fechar')) {
-        const { error: closeError } = await supabase
-          .from('support_tickets')
-          .update({ status: 'fechado' })
-          .eq('id', ticketId);
-          
-        if (closeError) throw closeError;
-        
-        setTicket(prev => prev ? {...prev, status: 'fechado'} : null);
-        
-        toast({
-          title: "Ticket fechado",
-          description: "O ticket foi fechado com sucesso.",
-        });
-      }
-      
-      setResponses([...responses, ...(data as TicketResponse[])]);
-      setNewResponse("");
-      
-      toast({
-        title: "Resposta enviada",
-        description: "Sua resposta foi enviada com sucesso."
-      });
-    } catch (error: any) {
-      console.error('Erro ao enviar resposta:', error);
-      toast({
-        title: "Erro ao enviar resposta",
-        description: error.message || "Não foi possível enviar sua resposta.",
+        title: "Erro",
+        description: "Não foi possível fechar o ticket.",
         variant: "destructive",
       });
     } finally {
-      setSubmitting(false);
+      setIsClosing(false);
     }
   };
   
-  if (loading || loadingData) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-ramel" />
-        <p className="mt-4">Carregando...</p>
-      </div>
-    );
-  }
+  const getStatusBadge = (status: string) => {
+    switch(status?.toLowerCase()) {
+      case "aberto":
+        return (
+          <Badge className="flex items-center gap-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30">
+            <Clock className="h-3 w-3" /> Aberto
+          </Badge>
+        );
+      case "respondido":
+        return (
+          <Badge className="flex items-center gap-1 bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30">
+            <MessageSquare className="h-3 w-3" /> Respondido
+          </Badge>
+        );
+      case "fechado":
+        return (
+          <Badge className="flex items-center gap-1 bg-gray-500/20 text-gray-400 border border-gray-500/30 hover:bg-gray-500/30">
+            <Check className="h-3 w-3" /> Fechado
+          </Badge>
+        );
+      case "urgente":
+        return (
+          <Badge className="flex items-center gap-1 bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30">
+            <AlertCircle className="h-3 w-3" /> Urgente
+          </Badge>
+        );
+      default:
+        return (
+          <Badge className="flex items-center gap-1">
+            {status}
+          </Badge>
+        );
+    }
+  };
   
-  if (!ticket || !hasPermission) {
+  if (loading || isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
-        <p className="text-red-500">Ticket não encontrado ou sem permissão de acesso.</p>
-        <Button 
-          variant="outline" 
-          className="mt-4"
-          onClick={() => navigate("/membro/suporte")}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar para Suporte
-        </Button>
+        <div className="h-8 w-8 rounded-full border-2 border-t-transparent border-ramel animate-spin" />
+        <p className="mt-4">Carregando...</p>
       </div>
     );
   }
@@ -224,111 +184,191 @@ const TicketDetail = () => {
             size="sm"
             onClick={() => navigate("/membro/suporte")}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4 mr-1" />
             Voltar
           </Button>
-          <h1 className="text-3xl font-bold">Ticket #{ticket.id.slice(0, 8)}</h1>
-          <div className={`ml-auto px-2 py-1 rounded text-xs ${
-            ticket.status === 'aberto' 
-              ? 'bg-blue-500/20 text-blue-300' 
-              : ticket.status === 'respondido'
-              ? 'bg-green-500/20 text-green-300'
-              : 'bg-gray-500/20 text-gray-300'
-          }`}>
-            {ticket.status === 'aberto' ? 'Aberto' : 
-             ticket.status === 'respondido' ? 'Respondido' : 'Fechado'}
-          </div>
+          <h1 className="text-2xl font-bold">Ticket #{ticketId?.slice(0, 8)}</h1>
         </div>
         
-        <Card className="glass-card mb-8">
-          <CardHeader>
-            <CardTitle>{ticket.title}</CardTitle>
-            <CardDescription>
-              {new Date(ticket.created_at).toLocaleDateString('pt-BR')} às {new Date(ticket.created_at).toLocaleTimeString('pt-BR')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="whitespace-pre-line">{ticket.description}</p>
-          </CardContent>
-        </Card>
-        
-        {responses.length > 0 && (
-          <div className="space-y-4 mb-8">
-            <h2 className="text-xl font-bold">Respostas</h2>
-            {responses.map((response) => (
-              <Card key={response.id} className={`glass-card ${response.is_admin ? 'border-green-500/30' : ''}`}>
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm">
-                      {response.is_admin ? 'Administrador' : 'Você'}
-                    </CardTitle>
-                    <CardDescription>
-                      {new Date(response.created_at).toLocaleDateString('pt-BR')} às {new Date(response.created_at).toLocaleTimeString('pt-BR')}
-                    </CardDescription>
-                  </div>
+        {ticket && (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Coluna da esquerda - Informações do ticket */}
+            <div>
+              <Card className="sticky top-4 bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle>Detalhes do Ticket</CardTitle>
+                  <CardDescription>
+                    Criado em {new Date(ticket.created_at).toLocaleDateString('pt-BR')}
+                  </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <p className="whitespace-pre-line">{response.content}</p>
+                <CardContent className="space-y-4">
+                  <div className="space-y-1">
+                    <Label>Status</Label>
+                    <div>
+                      {getStatusBadge(ticket.status)}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <Label>Assunto</Label>
+                    <p className="font-medium">{ticket.title}</p>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <Label>Descrição</Label>
+                    <p className="text-sm text-muted-foreground whitespace-pre-line">
+                      {ticket.description}
+                    </p>
+                  </div>
                 </CardContent>
+                <CardFooter>
+                  {ticket.status !== 'fechado' && (
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={handleCloseTicket}
+                      disabled={isClosing}
+                    >
+                      {isClosing ? (
+                        <span className="flex items-center">
+                          <div className="h-4 w-4 rounded-full border-2 border-t-transparent border-current animate-spin mr-2" />
+                          Processando...
+                        </span>
+                      ) : (
+                        <span className="flex items-center">
+                          <Check className="h-4 w-4 mr-2" />
+                          Marcar como Resolvido
+                        </span>
+                      )}
+                    </Button>
+                  )}
+                </CardFooter>
               </Card>
-            ))}
-          </div>
-        )}
-        
-        {ticket.status !== 'fechado' || isAdmin ? (
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle>Enviar Resposta</CardTitle>
-              {isAdmin && (
-                <CardDescription>
-                  Dica: Inclua #fechar na sua resposta para fechar este ticket
-                </CardDescription>
-              )}
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmitResponse} className="space-y-4">
-                <Textarea 
-                  placeholder="Digite sua resposta..."
-                  value={newResponse}
-                  onChange={(e) => setNewResponse(e.target.value)}
-                  rows={5}
-                  required
-                />
-                
-                <div className="flex justify-end">
-                  <Button type="submit" disabled={submitting}>
-                    {submitting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Enviando...
-                      </>
+            </div>
+            
+            {/* Coluna da direita - Conversa */}
+            <div className="lg:col-span-3">
+              <Card>
+                <CardHeader className="border-b">
+                  <CardTitle>Conversa</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="p-4 max-h-[60vh] overflow-y-auto space-y-4">
+                    {/* Mensagem inicial - descrição do ticket */}
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+                          {ticket.user_name?.charAt(0).toUpperCase() || user?.user_metadata?.name?.charAt(0).toUpperCase() || "U"}
+                        </div>
+                        <div>
+                          <span className="font-medium">{ticket.user_name || user?.user_metadata?.name || "Você"}</span>
+                          <span className="text-xs text-muted-foreground ml-2">
+                            {new Date(ticket.created_at).toLocaleString('pt-BR')}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-muted/30 rounded-lg p-3 ml-10">
+                        <p className="whitespace-pre-line">{ticket.description}</p>
+                      </div>
+                    </div>
+                    
+                    {/* Separador com data */}
+                    <div className="relative">
+                      <Separator className="my-6" />
+                      <span className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-card px-3 text-xs text-muted-foreground">
+                        Mensagens
+                      </span>
+                    </div>
+                    
+                    {/* Lista de mensagens */}
+                    {messages.length > 0 ? (
+                      messages.map((message) => (
+                        <div key={message.id} className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                              message.is_admin 
+                                ? "bg-ramel/20 text-ramel" 
+                                : "bg-secondary"
+                            }`}>
+                              {message.is_admin 
+                                ? <MessageSquare className="h-4 w-4" /> 
+                                : message.user_name?.charAt(0).toUpperCase() || user?.user_metadata?.name?.charAt(0).toUpperCase() || "U"
+                              }
+                            </div>
+                            <div>
+                              <span className="font-medium">
+                                {message.is_admin 
+                                  ? "Suporte Ramel" 
+                                  : message.user_name || user?.user_metadata?.name || "Você"
+                                }
+                              </span>
+                              <span className="text-xs text-muted-foreground ml-2">
+                                {new Date(message.created_at).toLocaleString('pt-BR')}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <div className={`rounded-lg p-3 ml-10 ${
+                            message.is_admin 
+                              ? "bg-ramel/10 border border-ramel/20" 
+                              : "bg-muted/30"
+                          }`}>
+                            <p className="whitespace-pre-line">{message.content}</p>
+                          </div>
+                        </div>
+                      ))
                     ) : (
-                      <>
-                        <Send className="h-4 w-4 mr-2" />
-                        Enviar Resposta
-                      </>
+                      <div className="text-center py-6 text-muted-foreground">
+                        <MessageSquare className="h-10 w-10 mx-auto opacity-30 mb-2" />
+                        <p>Ainda não há respostas neste ticket.</p>
+                      </div>
                     )}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="glass-card bg-secondary/50">
-            <CardContent className="py-8 text-center">
-              <Lock className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-4" />
-              <h3 className="text-lg font-medium mb-2">Ticket Fechado</h3>
-              <p className="text-muted-foreground">
-                Este ticket foi fechado e não aceita mais respostas.
-              </p>
-              <Button 
-                className="mt-4"
-                onClick={() => navigate("/membro/suporte")}
-              >
-                Criar Novo Ticket
-              </Button>
-            </CardContent>
-          </Card>
+                  </div>
+                </CardContent>
+                
+                {ticket.status !== 'fechado' ? (
+                  <CardFooter className="p-4 border-t bg-muted/20">
+                    <div className="w-full space-y-2">
+                      <Textarea 
+                        placeholder="Digite sua mensagem..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        className="min-h-[100px]"
+                      />
+                      <div className="flex justify-end">
+                        <Button 
+                          onClick={handleSendMessage} 
+                          disabled={!newMessage.trim() || isSending}
+                        >
+                          {isSending ? (
+                            <span className="flex items-center">
+                              <div className="h-4 w-4 rounded-full border-2 border-t-transparent border-current animate-spin mr-2" />
+                              Enviando...
+                            </span>
+                          ) : (
+                            <span className="flex items-center">
+                              <Send className="h-4 w-4 mr-2" />
+                              Enviar
+                            </span>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardFooter>
+                ) : (
+                  <CardFooter className="p-4 border-t bg-muted/20">
+                    <div className="w-full flex items-center justify-center p-2 rounded-md bg-secondary/40">
+                      <X className="h-4 w-4 text-muted-foreground mr-2" />
+                      <span className="text-muted-foreground">
+                        Este ticket está fechado. Não é possível enviar novas mensagens.
+                      </span>
+                    </div>
+                  </CardFooter>
+                )}
+              </Card>
+            </div>
+          </div>
         )}
       </main>
     </div>

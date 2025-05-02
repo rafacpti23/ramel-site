@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -6,7 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import MemberHeader from "@/components/MemberHeader";
-import { Loader2, ExternalLink } from "lucide-react";
+import FileManagementCard from "@/components/FileManagementCard";
+import VideoLessonCard from "@/components/VideoLessonCard";
+import EnhancedTicketCard from "@/components/support/EnhancedTicketCard";
+import { Loader2 } from "lucide-react";
 
 interface Category {
   id: string;
@@ -20,6 +24,9 @@ interface SupportFile {
   description: string | null;
   file_url: string;
   category_id: string;
+  category: string;
+  created_at: string;
+  file_type: string;
 }
 
 interface VideoLesson {
@@ -28,7 +35,17 @@ interface VideoLesson {
   description: string | null;
   video_url: string;
   category_id: string;
+  category: string;
   thumbnail_url?: string;
+}
+
+interface Ticket {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  created_at: string;
+  user_id: string;
 }
 
 const MemberArea = () => {
@@ -38,6 +55,7 @@ const MemberArea = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [supportFiles, setSupportFiles] = useState<SupportFile[]>([]);
   const [videoLessons, setVideoLessons] = useState<VideoLesson[]>([]);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   
   useEffect(() => {
@@ -47,7 +65,7 @@ const MemberArea = () => {
     }
 
     if (!loading && user && !isPaid) {
-      navigate("/membro/aguardando");
+      navigate("/aguardando-aprovacao");
       return;
     }
     
@@ -59,6 +77,7 @@ const MemberArea = () => {
   const fetchData = async () => {
     setLoadingData(true);
     try {
+      // Buscar categorias
       const { data: categoriesData, error: categoriesError } = await supabase
         .from('categories')
         .select('*')
@@ -67,30 +86,55 @@ const MemberArea = () => {
       if (categoriesError) throw categoriesError;
       setCategories(categoriesData || []);
       
+      // Buscar arquivos com informações da categoria
       const { data: filesData, error: filesError } = await supabase
         .from('support_files')
-        .select('*');
+        .select('*, categories(name)');
         
       if (filesError) throw filesError;
-      setSupportFiles(filesData || []);
       
+      // Transformar os dados para incluir o nome da categoria diretamente no objeto
+      const formattedFiles = filesData?.map(file => ({
+        ...file,
+        category: (file.categories as any)?.name || 'Sem categoria',
+        file_type: file.file_url.split('.').pop() || ''
+      })) || [];
+      
+      setSupportFiles(formattedFiles);
+      
+      // Buscar vídeos com informações da categoria
       const { data: videosData, error: videosError } = await supabase
         .from('video_lessons')
-        .select('*');
+        .select('*, categories(name)');
         
       if (videosError) throw videosError;
       
-      const videosWithThumbnails = videosData ? await Promise.all(
+      // Processar vídeos e obter thumbnails
+      const processedVideos = videosData ? await Promise.all(
         videosData.map(async (video) => {
           const thumbnailUrl = await getVideoThumbnail(video.video_url);
           return {
             ...video,
+            category: (video.categories as any)?.name || 'Sem categoria',
             thumbnail_url: thumbnailUrl
           };
         })
       ) : [];
       
-      setVideoLessons(videosWithThumbnails);
+      setVideoLessons(processedVideos);
+      
+      // Buscar tickets do usuário
+      if (user?.id) {
+        const { data: ticketsData, error: ticketsError } = await supabase
+          .from('support_tickets')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(3);
+          
+        if (ticketsError) throw ticketsError;
+        setTickets(ticketsData || []);
+      }
       
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
@@ -172,25 +216,11 @@ const MemberArea = () => {
                             Nenhum arquivo disponível nesta categoria.
                           </p>
                         ) : (
-                          <ul className="space-y-3">
+                          <div className="space-y-4">
                             {categoryFiles.map((file) => (
-                              <li key={file.id}>
-                                <a 
-                                  href={file.file_url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="flex flex-col p-3 rounded-md border border-white/10 hover:bg-white/5 transition-colors"
-                                >
-                                  <span className="font-medium">{file.title}</span>
-                                  {file.description && (
-                                    <span className="text-sm text-muted-foreground mt-1">
-                                      {file.description}
-                                    </span>
-                                  )}
-                                </a>
-                              </li>
+                              <FileManagementCard key={file.id} file={file} />
                             ))}
-                          </ul>
+                          </div>
                         )}
                       </CardContent>
                     </Card>
@@ -224,42 +254,11 @@ const MemberArea = () => {
                             Nenhum vídeo disponível nesta categoria.
                           </p>
                         ) : (
-                          <ul className="space-y-4">
+                          <div className="space-y-6">
                             {categoryVideos.map((video) => (
-                              <li key={video.id}>
-                                <a 
-                                  href={video.video_url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="block group"
-                                >
-                                  <div className="relative aspect-video mb-2 overflow-hidden rounded-md">
-                                    <img 
-                                      src={video.thumbnail_url || '/placeholder.svg'} 
-                                      alt={video.title}
-                                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                                      onError={(e) => {
-                                        const target = e.target as HTMLImageElement;
-                                        target.src = "/placeholder.svg";
-                                      }}
-                                    />
-                                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                      <ExternalLink className="text-white h-10 w-10" />
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="p-2">
-                                    <h4 className="font-medium group-hover:text-ramel transition-colors">{video.title}</h4>
-                                    {video.description && (
-                                      <p className="text-sm text-muted-foreground mt-1">
-                                        {video.description}
-                                      </p>
-                                    )}
-                                  </div>
-                                </a>
-                              </li>
+                              <VideoLessonCard key={video.id} video={video} />
                             ))}
-                          </ul>
+                          </div>
                         )}
                       </CardContent>
                     </Card>
@@ -270,25 +269,41 @@ const MemberArea = () => {
           </TabsContent>
           
           <TabsContent value="suporte">
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle>Suporte ao Membro</CardTitle>
-                <CardDescription>
-                  Envie suas dúvidas ou solicite suporte técnico
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center p-6">
-                  <p className="mb-4">
-                    Para criar um novo ticket de suporte ou visualizar seus tickets anteriores, 
-                    clique no botão abaixo.
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="glass-card">
+                <CardHeader>
+                  <CardTitle>Suporte ao Membro</CardTitle>
+                  <CardDescription>
+                    Envie suas dúvidas ou solicite suporte técnico
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center p-6">
+                    <p className="mb-4">
+                      Para criar um novo ticket de suporte ou visualizar seus tickets anteriores, 
+                      clique no botão abaixo.
+                    </p>
+                    <Button onClick={() => navigate("/membro/suporte")}>
+                      Acessar Tickets de Suporte
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <div className="space-y-6">
+                <h3 className="text-xl font-semibold">Tickets Recentes</h3>
+                
+                {tickets.length === 0 ? (
+                  <p className="text-muted-foreground">
+                    Você não possui tickets de suporte.
                   </p>
-                  <Button onClick={() => navigate("/membro/suporte")}>
-                    Acessar Tickets de Suporte
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                ) : (
+                  tickets.map((ticket) => (
+                    <EnhancedTicketCard key={ticket.id} ticket={ticket} />
+                  ))
+                )}
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </main>

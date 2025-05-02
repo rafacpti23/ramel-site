@@ -1,3 +1,4 @@
+
 import Auth from "@/pages/Auth";
 import Index from "@/pages/Index";
 import MemberArea from "@/pages/MemberArea";
@@ -12,6 +13,7 @@ import AdminPage from "@/pages/AdminPage";
 import SystemConfigPage from "@/pages/SystemConfigPage";
 import DeliveryFlow from "@/pages/DeliveryFlow";
 import AgendaPro from "@/pages/AgendaPro";
+import AgendaProPlus from "@/pages/AgendaProPlus";
 import { Toaster } from "@/components/ui/toaster"
 import WaitingApproval from "@/pages/WaitingApproval";
 
@@ -25,6 +27,7 @@ function App() {
           <Route path="/aguardando-aprovacao" element={<WaitingApproval />} />
           <Route path="/produtos/deliveryflow" element={<DeliveryFlow />} />
           <Route path="/produtos/agendapro" element={<AgendaPro />} />
+          <Route path="/produtos/agenda-pro-plus" element={<AgendaProPlus />} />
           <Route path="/membro" element={<MemberArea />} />
           <Route path="/membro/arquivo" element={<FileManagement />} />
           <Route path="/membro/videos" element={<VideoManagement />} />

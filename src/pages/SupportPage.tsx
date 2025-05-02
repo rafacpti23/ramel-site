@@ -3,140 +3,73 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useTickets } from "@/hooks/useTickets";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import MemberHeader from "@/components/MemberHeader";
-import { Loader2, Plus, Search } from "lucide-react";
-import TicketCard from "@/components/support/TicketCard";
-
-interface Ticket {
-  id: string;
-  title: string;
-  description: string;
-  status: string;
-  created_at: string;
-  user_id: string;
-}
+import EnhancedTicketCard from "@/components/support/EnhancedTicketCard";
+import { Plus, Loader2, AlertCircle } from "lucide-react";
+import { Ticket } from "@/types/ticket";
 
 const SupportPage = () => {
-  const { user, loading, isAdmin, userProfile } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { tickets, isLoading, createTicket, fetchTickets } = useTickets();
   
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loadingData, setLoadingData] = useState(true);
-  const [showNewTicketForm, setShowNewTicketForm] = useState(false);
-  const [newTicketTitle, setNewTicketTitle] = useState("");
-  const [newTicketDescription, setNewTicketDescription] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [showForm, setShowForm] = useState(false);
   
   useEffect(() => {
     if (!loading && !user) {
       navigate("/auth");
-      return;
-    }
-    
-    if (!loading && user) {
-      fetchTickets();
     }
   }, [user, loading, navigate]);
   
-  const fetchTickets = async () => {
-    setLoadingData(true);
-    try {
-      let query = supabase
-        .from('support_tickets')
-        .select('*')
-        .order('created_at', { ascending: false });
-        
-      // Se não for admin, filtrar apenas os tickets do usuário atual
-      if (!isAdmin && user?.id) {
-        query = query.eq('user_id', user.id);
-      }
-      
-      const { data, error } = await query;
-      
-      if (error) throw error;
-      setTickets(data || []);
-    } catch (error) {
-      console.error('Erro ao carregar tickets:', error);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!title.trim() || !description.trim()) {
       toast({
-        title: "Erro ao carregar tickets",
-        description: "Não foi possível carregar seus tickets de suporte.",
+        title: "Campos obrigatórios",
+        description: "Preencha todos os campos para enviar um ticket.",
         variant: "destructive",
       });
-    } finally {
-      setLoadingData(false);
+      return;
     }
-  };
-  
-  const handleSubmitTicket = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
     
+    setSubmitting(true);
     try {
-      if (!user) {
-        throw new Error("Usuário não autenticado");
-      }
-      
-      // Verificar se o usuário tem WhatsApp cadastrado
-      if (!userProfile?.whatsapp && !isAdmin) {
-        toast({
-          title: "WhatsApp necessário",
-          description: "Por favor, atualize seu perfil com um número de WhatsApp para criar tickets.",
-          variant: "destructive",
-        });
-        throw new Error("WhatsApp não cadastrado");
-      }
-      
-      const { data, error } = await supabase
-        .from('support_tickets')
-        .insert([
-          {
-            user_id: user.id,
-            title: newTicketTitle,
-            description: newTicketDescription,
-          }
-        ])
-        .select();
-        
-      if (error) throw error;
-      
+      await createTicket({ title, description });
       toast({
-        title: "Ticket criado com sucesso",
-        description: "Seu ticket foi enviado e será respondido em breve.",
+        title: "Ticket criado",
+        description: "Seu ticket foi enviado com sucesso. Em breve responderemos.",
       });
       
-      setTickets([...(data as Ticket[] || []), ...tickets]);
-      setShowNewTicketForm(false);
-      setNewTicketTitle("");
-      setNewTicketDescription("");
-    } catch (error: any) {
-      console.error('Erro ao criar ticket:', error);
-      if (error.message !== "WhatsApp não cadastrado") {
-        toast({
-          title: "Erro ao criar ticket",
-          description: error.message || "Não foi possível criar o ticket.",
-          variant: "destructive",
-        });
-      }
+      // Reset form
+      setTitle("");
+      setDescription("");
+      setShowForm(false);
+      
+      // Refresh tickets list
+      fetchTickets();
+    } catch (error) {
+      console.error("Erro ao criar ticket:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível criar o ticket. Tente novamente.",
+        variant: "destructive",
+      });
     } finally {
       setSubmitting(false);
     }
   };
   
-  const filteredTickets = searchTerm
-    ? tickets.filter(ticket => 
-        ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ticket.description.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : tickets;
-  
-  if (loading || loadingData) {
+  if (loading || isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-ramel" />
@@ -150,97 +83,100 @@ const SupportPage = () => {
       <MemberHeader />
       
       <main className="container mx-auto px-4 py-10">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">Suporte</h1>
-          <Button onClick={() => setShowNewTicketForm(true)} className="bg-ramel hover:bg-ramel-dark">
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Ticket
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold">Central de Suporte</h1>
+            <p className="text-muted-foreground mt-1">
+              Envie suas dúvidas ou solicite suporte técnico
+            </p>
+          </div>
+          
+          <Button 
+            onClick={() => setShowForm(!showForm)} 
+            className="w-full md:w-auto"
+          >
+            {showForm ? (
+              <>Cancelar</>
+            ) : (
+              <>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Ticket
+              </>
+            )}
           </Button>
         </div>
         
-        {/* Barra de busca */}
-        <div className="mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Buscar tickets..." 
-              className="pl-10"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
-        
-        {showNewTicketForm && (
-          <Card className="glass-card mb-8 border-t-4 border-t-ramel">
-            <CardHeader>
-              <CardTitle>Novo Ticket de Suporte</CardTitle>
-              <CardDescription>Preencha o formulário para enviar sua dúvida ou solicitação</CardDescription>
+        {showForm && (
+          <Card className="mb-8 border border-ramel/20 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-ramel/10 to-transparent">
+              <CardTitle>Criar Novo Ticket</CardTitle>
+              <CardDescription>
+                Descreva seu problema ou dúvida para que possamos ajudar
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmitTicket} className="space-y-4">
+            <CardContent className="pt-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title">Título</Label>
-                  <Input 
-                    id="title" 
-                    placeholder="Resumo da sua solicitação" 
-                    value={newTicketTitle}
-                    onChange={(e) => setNewTicketTitle(e.target.value)}
+                  <Label htmlFor="title">Assunto</Label>
+                  <Input
+                    id="title"
+                    placeholder="Resumo do seu problema ou dúvida"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
                     required
                   />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="description">Descrição</Label>
-                  <Textarea 
-                    id="description" 
-                    placeholder="Descreva sua dúvida ou problema em detalhes" 
-                    value={newTicketDescription}
-                    onChange={(e) => setNewTicketDescription(e.target.value)}
+                  <Textarea
+                    id="description"
+                    placeholder="Descreva detalhadamente sua dúvida ou problema"
                     rows={5}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                     required
                   />
                 </div>
                 
-                <div className="flex gap-3 justify-end">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setShowNewTicketForm(false)}
-                    disabled={submitting}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={submitting}
-                    className="bg-ramel hover:bg-ramel-dark"
-                  >
-                    {submitting ? 
-                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enviando...</> : 
-                      'Enviar Ticket'}
-                  </Button>
-                </div>
+                <Button type="submit" className="w-full" disabled={submitting}>
+                  {submitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Enviando...
+                    </>
+                  ) : (
+                    "Enviar Ticket"
+                  )}
+                </Button>
               </form>
             </CardContent>
           </Card>
         )}
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredTickets.length === 0 ? (
-            <Card className="glass-card md:col-span-2">
-              <CardContent className="text-center py-8">
-                <p className="text-muted-foreground">
-                  {searchTerm ? 
-                    "Nenhum ticket encontrado com os termos da pesquisa." : 
-                    "Você ainda não tem tickets de suporte."}
+        <div>
+          <h2 className="text-2xl font-semibold mb-6">Seus Tickets</h2>
+          
+          {tickets.length === 0 ? (
+            <Card className="bg-muted/50 border border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <AlertCircle className="h-12 w-12 text-muted-foreground opacity-50 mb-4" />
+                <h3 className="text-lg font-medium">Nenhum ticket encontrado</h3>
+                <p className="text-muted-foreground mt-1 mb-4">
+                  Você ainda não abriu nenhum ticket de suporte
                 </p>
+                <Button onClick={() => setShowForm(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar Primeiro Ticket
+                </Button>
               </CardContent>
             </Card>
           ) : (
-            filteredTickets.map((ticket) => (
-              <TicketCard key={ticket.id} ticket={ticket} />
-            ))
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {tickets.map((ticket: Ticket) => (
+                <EnhancedTicketCard key={ticket.id} ticket={ticket} />
+              ))}
+            </div>
           )}
         </div>
       </main>

@@ -32,30 +32,54 @@ const FileManagementCard = ({ file }: FileCardProps) => {
     }
   };
   
-  // Determinando o ícone e cor com base na categoria ou tipo de arquivo
+  // Determinando o ícone e cor com base na categoria
   const getFileIconAndColor = () => {
+    // Converte para minúsculas para comparação
     const category = file.category?.toLowerCase() || '';
     const fileType = file.file_type?.toLowerCase() || '';
     
-    if (category.includes('manual') || fileType.includes('pdf')) {
+    // CRMs - tons de azul
+    if (category.includes('crm')) {
       return { 
         icon: <FileText className="h-10 w-10" />,
         color: "from-blue-600/20 to-blue-700/30",
         borderColor: "border-blue-600/30"
       };
-    } else if (category.includes('suporte') || category.includes('ajuda')) {
+    } 
+    // Manuais - tons de verde
+    else if (category.includes('manual') || category.includes('documento') || fileType.includes('pdf')) {
       return { 
-        icon: <MessageSquare className="h-10 w-10" />,
+        icon: <FileText className="h-10 w-10" />,
         color: "from-green-600/20 to-green-700/30", 
         borderColor: "border-green-600/30"
       };
-    } else if (category.includes('tutorial')) {
+    } 
+    // Suporte - tons de roxo
+    else if (category.includes('suporte') || category.includes('ajuda')) {
       return { 
-        icon: <Ticket className="h-10 w-10" />,
+        icon: <MessageSquare className="h-10 w-10" />,
         color: "from-purple-600/20 to-purple-700/30",
         borderColor: "border-purple-600/30" 
       };
-    } else {
+    } 
+    // Tutoriais - tons de amarelo
+    else if (category.includes('tutorial')) {
+      return { 
+        icon: <Ticket className="h-10 w-10" />,
+        color: "from-yellow-600/20 to-yellow-700/30",
+        borderColor: "border-yellow-600/30" 
+      };
+    } 
+    // Marketing - tons de laranja
+    else if (category.includes('marketing')) {
+      return { 
+        icon: <FileText className="h-10 w-10" />,
+        color: "from-orange-600/20 to-orange-700/30",
+        borderColor: "border-orange-600/30" 
+      };
+    }
+    // Padrão - cor da marca
+    else {
       return { 
         icon: <FileText className="h-10 w-10" />,
         color: "from-ramel/20 to-ramel-dark/30",

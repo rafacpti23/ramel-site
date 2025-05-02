@@ -6,6 +6,7 @@ import ProductsSection from "@/components/ProductsSection";
 import PromotionSection from "@/components/PromotionSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
+import SecurityBadges from "@/components/SecurityBadges";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -37,7 +38,7 @@ const Index = () => {
                   Revolucione sua agenda com IA, chatbot automático para agendamentos, 
                   lembretes via WhatsApp e muito mais!
                 </p>
-                <Link to="/produtos/agenda-pro-plus">
+                <Link to="/produtos/agendapro">
                   <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-ramel">
                     Conhecer Agenda Pro+ <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
@@ -73,6 +74,7 @@ const Index = () => {
         
         <ServicesSection />
         <ProductsSection deliveryLogoUrl="https://i.ibb.co/qgRmCS7/3.png" />
+        <SecurityBadges />
         <PromotionSection />
         <ContactSection />
       </main>
