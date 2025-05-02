@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -145,8 +144,11 @@ export const useUserManagement = () => {
         
       if (profileError) throw profileError;
       
-      // Remover usuário da autenticação
-      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+      // Remover usuário da autenticação - usando funções personalizadas do Supabase
+      // ao invés do método admin.deleteUser que requer permissões especiais
+      const { error: authError } = await supabase.functions.invoke('delete-user', {
+        body: { userId }
+      });
       
       if (authError) {
         throw authError;

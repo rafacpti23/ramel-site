@@ -60,7 +60,7 @@ const ProductsSection = ({ deliveryLogoUrl }: { deliveryLogoUrl?: string }) => {
               </CardContent>
               
               <CardFooter>
-                <Link to="/produtos/agenda-pro-plus" className="w-full">
+                <Link to="/produtos/agendapro" className="w-full">
                   <Button className="w-full bg-ramel hover:bg-ramel-dark">Saiba Mais</Button>
                 </Link>
               </CardFooter>

@@ -10,7 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import MemberHeader from "@/components/MemberHeader";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, Search } from "lucide-react";
+import TicketCard from "@/components/support/TicketCard";
 
 interface Ticket {
   id: string;
@@ -31,6 +32,7 @@ const SupportPage = () => {
   const [newTicketTitle, setNewTicketTitle] = useState("");
   const [newTicketDescription, setNewTicketDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   
   useEffect(() => {
     if (!loading && !user) {
@@ -127,6 +129,13 @@ const SupportPage = () => {
     }
   };
   
+  const filteredTickets = searchTerm
+    ? tickets.filter(ticket => 
+        ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ticket.description.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : tickets;
+  
   if (loading || loadingData) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
@@ -143,14 +152,27 @@ const SupportPage = () => {
       <main className="container mx-auto px-4 py-10">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">Suporte</h1>
-          <Button onClick={() => setShowNewTicketForm(true)}>
+          <Button onClick={() => setShowNewTicketForm(true)} className="bg-ramel hover:bg-ramel-dark">
             <Plus className="h-4 w-4 mr-2" />
             Novo Ticket
           </Button>
         </div>
         
+        {/* Barra de busca */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Buscar tickets..." 
+              className="pl-10"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+        
         {showNewTicketForm && (
-          <Card className="glass-card mb-8">
+          <Card className="glass-card mb-8 border-t-4 border-t-ramel">
             <CardHeader>
               <CardTitle>Novo Ticket de Suporte</CardTitle>
               <CardDescription>Preencha o formulário para enviar sua dúvida ou solicitação</CardDescription>
@@ -189,8 +211,14 @@ const SupportPage = () => {
                   >
                     Cancelar
                   </Button>
-                  <Button type="submit" disabled={submitting}>
-                    {submitting ? "Enviando..." : "Enviar Ticket"}
+                  <Button 
+                    type="submit" 
+                    disabled={submitting}
+                    className="bg-ramel hover:bg-ramel-dark"
+                  >
+                    {submitting ? 
+                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enviando...</> : 
+                      'Enviar Ticket'}
                   </Button>
                 </div>
               </form>
@@ -198,49 +226,20 @@ const SupportPage = () => {
           </Card>
         )}
         
-        <div className="space-y-4">
-          {tickets.length === 0 ? (
-            <Card className="glass-card">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredTickets.length === 0 ? (
+            <Card className="glass-card md:col-span-2">
               <CardContent className="text-center py-8">
                 <p className="text-muted-foreground">
-                  Você ainda não tem tickets de suporte.
+                  {searchTerm ? 
+                    "Nenhum ticket encontrado com os termos da pesquisa." : 
+                    "Você ainda não tem tickets de suporte."}
                 </p>
               </CardContent>
             </Card>
           ) : (
-            tickets.map((ticket) => (
-              <Card key={ticket.id} className="glass-card">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{ticket.title}</CardTitle>
-                    <div className={`px-2 py-1 rounded text-xs ${
-                      ticket.status === 'aberto' 
-                        ? 'bg-blue-500/20 text-blue-300' 
-                        : ticket.status === 'respondido'
-                        ? 'bg-green-500/20 text-green-300'
-                        : 'bg-gray-500/20 text-gray-300'
-                    }`}>
-                      {ticket.status === 'aberto' ? 'Aberto' : 
-                       ticket.status === 'respondido' ? 'Respondido' : 'Fechado'}
-                    </div>
-                  </div>
-                  <CardDescription>
-                    {new Date(ticket.created_at).toLocaleDateString('pt-BR')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="whitespace-pre-line">{ticket.description}</p>
-                </CardContent>
-                <CardFooter className="border-t border-white/10 pt-4">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => navigate(`/membro/suporte/${ticket.id}`)}
-                  >
-                    Ver Detalhes
-                  </Button>
-                </CardFooter>
-              </Card>
+            filteredTickets.map((ticket) => (
+              <TicketCard key={ticket.id} ticket={ticket} />
             ))
           )}
         </div>
