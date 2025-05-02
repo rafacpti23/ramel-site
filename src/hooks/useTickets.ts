@@ -1,56 +1,34 @@
 
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
-import type { Ticket } from "@/types/ticket";
-import { useSystemConfig } from "@/hooks/useSystemConfig";
+import { Ticket } from "@/types/ticket";
+import { toast } from "./use-toast";
 
 export const useTickets = () => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const { config } = useSystemConfig();
-
+  const [isLoading, setIsLoading] = useState(false);
+  
   const fetchTickets = async () => {
+    setLoading(true);
     try {
-      setRefreshing(true);
-      const { data: ticketsData, error: ticketsError } = await supabase
-        .from('support_tickets')
-        .select('*')
-        .order('created_at', { ascending: false });
-          
-      if (ticketsError) throw ticketsError;
+      const { data: user } = await supabase.auth.getUser();
+      if (!user?.user) return;
       
-      if (!ticketsData || ticketsData.length === 0) {
-        setTickets([]);
-        setLoading(false);
-        setRefreshing(false);
-        return;
-      }
-      
-      const ticketsWithProfiles = await Promise.all(
-        ticketsData.map(async (ticket) => {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('full_name, email, whatsapp')
-            .eq('id', ticket.user_id)
-            .single();
-              
-          return {
-            ...ticket,
-            user_name: profileData?.full_name || null,
-            user_email: profileData?.email || null,
-            user_whatsapp: profileData?.whatsapp || null
-          };
-        })
-      );
-      
-      setTickets(ticketsWithProfiles);
-    } catch (error) {
-      console.error('Erro ao carregar tickets:', error);
+      const { data, error } = await supabase
+        .from("support_tickets")
+        .select("*")
+        .eq("user_id", user.user.id)
+        .order("created_at", { ascending: false });
+        
+      if (error) throw error;
+      setTickets(data || []);
+    } catch (error: any) {
+      console.error("Erro ao buscar tickets:", error);
       toast({
-        title: "Erro",
-        description: "Não foi possível carregar os tickets de suporte.",
+        title: "Erro ao carregar tickets",
+        description: error.message,
         variant: "destructive",
       });
     } finally {
@@ -58,118 +36,163 @@ export const useTickets = () => {
       setRefreshing(false);
     }
   };
-
+  
+  const getTicket = async (ticketId: string) => {
+    setLoading(true);
+    try {
+      // Buscar o ticket
+      const { data: ticketData, error: ticketError } = await supabase
+        .from("support_tickets")
+        .select("*, support_messages(*)")
+        .eq("id", ticketId)
+        .single();
+        
+      if (ticketError) throw ticketError;
+      
+      return ticketData;
+    } catch (error: any) {
+      console.error("Erro ao buscar detalhes do ticket:", error);
+      toast({
+        title: "Erro ao carregar detalhes",
+        description: error.message,
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   const updateTicketStatus = async (ticketId: string, newStatus: string) => {
     try {
       const { error } = await supabase
-        .from('support_tickets')
+        .from("support_tickets")
         .update({ status: newStatus })
-        .eq('id', ticketId);
+        .eq("id", ticketId);
         
       if (error) throw error;
       
-      const updatedTicket = tickets.find(ticket => ticket.id === ticketId);
+      // Atualizar o estado local
+      setTickets((prev) =>
+        prev.map((ticket) =>
+          ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket
+        )
+      );
       
-      setTickets(tickets.map(ticket => 
-        ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket
-      ));
-      
-      toast({
-        title: "Status atualizado",
-        description: `O ticket foi marcado como ${newStatus}.`,
-      });
-      
-      if (newStatus === "fechado" && config?.ticketCloseWebhookUrl && updatedTicket) {
-        await sendWebhook(updatedTicket, newStatus);
-      }
-    } catch (error) {
-      console.error('Erro ao atualizar status:', error);
-      toast({
-        title: "Erro ao atualizar status",
-        description: "Não foi possível atualizar o status do ticket.",
-        variant: "destructive",
-      });
+      return { success: true };
+    } catch (error: any) {
+      console.error("Erro ao atualizar status:", error);
+      return { success: false, error: error.message };
     }
   };
-
+  
+  const closeTicket = async (ticketId: string) => {
+    return await updateTicketStatus(ticketId, "closed");
+  };
+  
   const deleteTicket = async (ticketId: string) => {
     try {
-      // Primeiro exclui as respostas relacionadas ao ticket
-      const { error: responsesError } = await supabase
-        .from("ticket_responses")
+      // Primeiro excluir mensagens relacionadas
+      const { error: msgError } = await supabase
+        .from("support_messages")
         .delete()
         .eq("ticket_id", ticketId);
+        
+      if (msgError) throw msgError;
       
-      if (responsesError) throw responsesError;
-      
-      // Depois exclui o ticket em si
-      const { error: ticketError } = await supabase
+      // Depois excluir o ticket
+      const { error } = await supabase
         .from("support_tickets")
         .delete()
         .eq("id", ticketId);
+        
+      if (error) throw error;
       
-      if (ticketError) throw ticketError;
+      // Atualizar o estado local
+      setTickets((prev) => prev.filter((ticket) => ticket.id !== ticketId));
       
-      // Atualiza o estado local removendo o ticket excluído
-      setTickets(tickets.filter((ticket) => ticket.id !== ticketId));
-      
-      toast({
-        title: "Ticket excluído",
-        description: "O ticket foi excluído com sucesso.",
-      });
-
-      return true;
-    } catch (error) {
+      return { success: true };
+    } catch (error: any) {
       console.error("Erro ao excluir ticket:", error);
-      toast({
-        title: "Erro ao excluir ticket",
-        description: "Não foi possível excluir o ticket. Tente novamente.",
-        variant: "destructive",
-      });
-      return false;
+      return { success: false, error: error.message };
     }
   };
-
-  const sendWebhook = async (ticket: Ticket, newStatus: string) => {
-    if (!config?.ticketCloseWebhookUrl) return;
-    
+  
+  const createTicket = async (title: string, description: string) => {
+    setIsLoading(true);
     try {
-      const webhookData = {
-        event: "ticket_closed",
-        ticket: {
-          id: ticket.id,
-          title: ticket.title,
-          ticket_number: ticket.id.slice(0, 8),
-          previous_status: ticket.status,
-          new_status: newStatus,
-          user_name: ticket.user_name || "Não identificado",
-          user_email: ticket.user_email || "Não identificado",
-          user_whatsapp: ticket.user_whatsapp || "Não informado",
-          closed_at: new Date().toISOString(),
-        }
-      };
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) {
+        throw new Error("Usuário não autenticado");
+      }
       
-      await fetch(config.ticketCloseWebhookUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(webhookData),
-        mode: "no-cors",
-      });
+      const { data, error } = await supabase
+        .from("support_tickets")
+        .insert([
+          {
+            title,
+            description,
+            user_id: userData.user.id,
+            status: "open",
+          },
+        ])
+        .select();
+        
+      if (error) throw error;
       
-      console.log("Webhook enviado com sucesso para ticket fechado", webhookData);
-    } catch (error) {
-      console.error("Erro ao enviar webhook:", error);
+      // Adicionar o novo ticket ao estado local
+      if (data && data.length > 0) {
+        setTickets((prev) => [data[0], ...prev]);
+        return { success: true, ticket: data[0] };
+      }
+      
+      return { success: true };
+    } catch (error: any) {
+      console.error("Erro ao criar ticket:", error);
+      return { success: false, error: error.message };
+    } finally {
+      setIsLoading(false);
     }
   };
-
+  
+  const addMessage = async (ticketId: string, content: string) => {
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) {
+        throw new Error("Usuário não autenticado");
+      }
+      
+      const { data, error } = await supabase
+        .from("support_messages")
+        .insert([
+          {
+            ticket_id: ticketId,
+            user_id: userData.user.id,
+            content,
+          },
+        ])
+        .select();
+        
+      if (error) throw error;
+      
+      return { success: true, message: data?.[0] || null };
+    } catch (error: any) {
+      console.error("Erro ao adicionar mensagem:", error);
+      return { success: false, error: error.message };
+    }
+  };
+  
   return {
     tickets,
     loading,
     refreshing,
+    isLoading,
     fetchTickets,
     updateTicketStatus,
-    deleteTicket
+    deleteTicket,
+    createTicket,
+    getTicket,
+    addMessage,
+    closeTicket
   };
 };

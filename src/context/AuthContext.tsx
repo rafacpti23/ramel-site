@@ -1,5 +1,5 @@
 
-import { createContext, useContext } from "react";
+import React, { createContext, useContext } from "react";
 import { useAuth as useAuthHook } from "@/hooks/auth/useAuth";
 import { AuthContextType } from "./AuthTypes";
 

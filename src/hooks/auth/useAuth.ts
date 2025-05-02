@@ -1,11 +1,9 @@
 
-import { useState, useEffect } from "react";
-import { Session, User } from "@supabase/supabase-js";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchUserProfile, handleAdminProfile } from "@/utils/auth/profileUtils";
 import { useAuthState } from "./useAuthState";
 import { useAuthActions } from "./useAuthActions";
-import { UserProfile } from "@/context/AuthTypes";
 
 export const useAuth = () => {
   const {
