@@ -122,6 +122,25 @@ export const useAuth = () => {
     }
   };
 
+  // Modificar os métodos de autenticação para corresponder aos tipos esperados
+  const signIn = async (email: string, password: string) => {
+    try {
+      const response = await actions.signIn(email, password);
+      return { error: null, data: response };
+    } catch (error: any) {
+      return { error, data: null };
+    }
+  };
+
+  const signUp = async (email: string, password: string, userData: { fullName: string; whatsapp?: string }) => {
+    try {
+      const response = await actions.signUp(email, password, userData.fullName, userData.whatsapp);
+      return { error: null, data: response };
+    } catch (error: any) {
+      return { error, data: null };
+    }
+  };
+
   return {
     user,
     session,
@@ -129,7 +148,9 @@ export const useAuth = () => {
     loading,
     isAdmin,
     isPaid,
-    ...actions,
+    signIn,
+    signUp,
+    signOut: actions.signOut,
     redirectToStripe
   };
 };

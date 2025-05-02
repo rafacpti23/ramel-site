@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +33,10 @@ export function RegisterForm() {
       const cleanWhatsapp = whatsapp.replace(/\D/g, '');
       
       // Realizar o cadastro
-      await signUp(email, password, fullName, cleanWhatsapp);
+      await signUp(email, password, {
+        fullName,
+        whatsapp: cleanWhatsapp
+      });
       
       // Indica que o usuário foi registrado com sucesso
       setUserRegistered(true);

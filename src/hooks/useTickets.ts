@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Ticket } from "@/types/ticket";
+import { Ticket, TicketMessage, TicketWithMessages } from "@/types/ticket";
 import { toast } from "./use-toast";
 
 export const useTickets = () => {
@@ -43,13 +43,28 @@ export const useTickets = () => {
       // Buscar o ticket
       const { data: ticketData, error: ticketError } = await supabase
         .from("support_tickets")
-        .select("*, support_messages(*)")
+        .select("*")
         .eq("id", ticketId)
         .single();
         
       if (ticketError) throw ticketError;
       
-      return ticketData;
+      // Buscar as mensagens do ticket
+      const { data: messagesData, error: messagesError } = await supabase
+        .from("ticket_responses")
+        .select("*")
+        .eq("ticket_id", ticketId)
+        .order("created_at", { ascending: true });
+        
+      if (messagesError) throw messagesError;
+      
+      // Formatar o resultado
+      const result: TicketWithMessages = {
+        ...ticketData as Ticket,
+        messages: messagesData as TicketMessage[] || []
+      };
+      
+      return result;
     } catch (error: any) {
       console.error("Erro ao buscar detalhes do ticket:", error);
       toast({
@@ -79,22 +94,25 @@ export const useTickets = () => {
         )
       );
       
-      return { success: true };
     } catch (error: any) {
       console.error("Erro ao atualizar status:", error);
-      return { success: false, error: error.message };
+      toast({
+        title: "Erro ao atualizar status",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
   
   const closeTicket = async (ticketId: string) => {
-    return await updateTicketStatus(ticketId, "closed");
+    await updateTicketStatus(ticketId, "fechado");
   };
   
   const deleteTicket = async (ticketId: string) => {
     try {
       // Primeiro excluir mensagens relacionadas
       const { error: msgError } = await supabase
-        .from("support_messages")
+        .from("ticket_responses")
         .delete()
         .eq("ticket_id", ticketId);
         
@@ -111,10 +129,15 @@ export const useTickets = () => {
       // Atualizar o estado local
       setTickets((prev) => prev.filter((ticket) => ticket.id !== ticketId));
       
-      return { success: true };
+      return true;
     } catch (error: any) {
       console.error("Erro ao excluir ticket:", error);
-      return { success: false, error: error.message };
+      toast({
+        title: "Erro ao excluir ticket",
+        description: error.message,
+        variant: "destructive",
+      });
+      return false;
     }
   };
   
@@ -133,7 +156,7 @@ export const useTickets = () => {
             title,
             description,
             user_id: userData.user.id,
-            status: "open",
+            status: "aberto",
           },
         ])
         .select();
@@ -163,7 +186,7 @@ export const useTickets = () => {
       }
       
       const { data, error } = await supabase
-        .from("support_messages")
+        .from("ticket_responses")
         .insert([
           {
             ticket_id: ticketId,
@@ -175,10 +198,10 @@ export const useTickets = () => {
         
       if (error) throw error;
       
-      return { success: true, message: data?.[0] || null };
+      return data?.[0] as TicketMessage;
     } catch (error: any) {
       console.error("Erro ao adicionar mensagem:", error);
-      return { success: false, error: error.message };
+      throw error;
     }
   };
   

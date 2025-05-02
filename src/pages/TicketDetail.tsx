@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -12,6 +11,7 @@ import MemberHeader from "@/components/MemberHeader";
 import { ArrowLeft, Send, MessageSquare, Check, Clock, AlertCircle, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { TicketMessage, TicketWithMessages } from "@/types/ticket";
 
 interface Message {
   id: string;
@@ -29,8 +29,7 @@ const TicketDetail = () => {
   const { ticketId } = useParams<{ ticketId: string }>();
   const { getTicket, addMessage, closeTicket } = useTickets();
   
-  const [ticket, setTicket] = useState<any>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [ticket, setTicket] = useState<TicketWithMessages | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -54,8 +53,7 @@ const TicketDetail = () => {
     try {
       const data = await getTicket(ticketId);
       if (data) {
-        setTicket(data.ticket);
-        setMessages(data.messages);
+        setTicket(data);
       } else {
         toast({
           title: "Ticket não encontrado",
@@ -81,13 +79,18 @@ const TicketDetail = () => {
     
     setIsSending(true);
     try {
-      const addedMessage = await addMessage({
-        ticket_id: ticketId,
-        content: newMessage,
-      });
+      const message = await addMessage(ticketId, newMessage);
       
-      setMessages([...messages, addedMessage]);
-      setNewMessage("");
+      if (message) {
+        setTicket(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            messages: [...prev.messages, message]
+          };
+        });
+        setNewMessage("");
+      }
       
       // Reload ticket data to get updated status
       loadTicketData();
@@ -282,8 +285,8 @@ const TicketDetail = () => {
                     </div>
                     
                     {/* Lista de mensagens */}
-                    {messages.length > 0 ? (
-                      messages.map((message) => (
+                    {ticket.messages.length > 0 ? (
+                      ticket.messages.map((message) => (
                         <div key={message.id} className="flex flex-col gap-1">
                           <div className="flex items-center gap-2 mb-1">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${

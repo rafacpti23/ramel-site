@@ -44,20 +44,25 @@ const SupportPage = () => {
     
     setSubmitting(true);
     try {
-      await createTicket({ title, description });
-      toast({
-        title: "Ticket criado",
-        description: "Seu ticket foi enviado com sucesso. Em breve responderemos.",
-      });
+      const result = await createTicket(title, description);
       
-      // Reset form
-      setTitle("");
-      setDescription("");
-      setShowForm(false);
-      
-      // Refresh tickets list
-      fetchTickets();
-    } catch (error) {
+      if (result.success) {
+        toast({
+          title: "Ticket criado",
+          description: "Seu ticket foi enviado com sucesso. Em breve responderemos.",
+        });
+        
+        // Reset form
+        setTitle("");
+        setDescription("");
+        setShowForm(false);
+        
+        // Refresh tickets list
+        fetchTickets();
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error: any) {
       console.error("Erro ao criar ticket:", error);
       toast({
         title: "Erro",

@@ -6,6 +6,9 @@ export interface Ticket {
   status: string;
   created_at: string;
   user_id: string;
+  user_name?: string;
+  user_email?: string;
+  user_whatsapp?: string;
 }
 
 export interface TicketMessage {
@@ -22,5 +25,5 @@ export interface TicketMessage {
 }
 
 export interface TicketWithMessages extends Ticket {
-  support_messages: TicketMessage[];
+  messages: TicketMessage[];
 }
