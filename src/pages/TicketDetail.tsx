@@ -296,14 +296,14 @@ const TicketDetail = () => {
                             }`}>
                               {message.is_admin 
                                 ? <MessageSquare className="h-4 w-4" /> 
-                                : message.user_name?.charAt(0).toUpperCase() || user?.user_metadata?.name?.charAt(0).toUpperCase() || "U"
+                                : message.user?.full_name?.charAt(0).toUpperCase() || user?.user_metadata?.name?.charAt(0).toUpperCase() || "U"
                               }
                             </div>
                             <div>
                               <span className="font-medium">
                                 {message.is_admin 
                                   ? "Suporte Ramel" 
-                                  : message.user_name || user?.user_metadata?.name || "Você"
+                                  : message.user?.full_name || user?.user_metadata?.name || "Você"
                                 }
                               </span>
                               <span className="text-xs text-muted-foreground ml-2">
