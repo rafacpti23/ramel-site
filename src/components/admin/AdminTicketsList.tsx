@@ -31,7 +31,7 @@ const AdminTicketsList = () => {
     setLoading(true);
     setRefreshing(true);
     try {
-      // Buscar todos os tickets (sem filtrar por usuário atual)
+      // Buscar todos os tickets com informações do usuário
       const { data, error } = await supabase
         .from("support_tickets")
         .select(`
