@@ -16,12 +16,21 @@ export const useTicketQueries = (
       
       const { data, error } = await supabase
         .from("support_tickets")
-        .select("*")
+        .select("*, profiles:user_id(*)")
         .eq("user_id", user.user.id)
         .order("created_at", { ascending: false });
         
       if (error) throw error;
-      setTickets(data || []);
+      
+      // Formatar os dados para corresponder ao tipo Ticket
+      const formattedTickets: Ticket[] = data.map((ticket: any) => ({
+        ...ticket,
+        user_name: ticket.profiles?.full_name || "Usuário Desconhecido",
+        user_email: ticket.profiles?.email || "",
+        user_whatsapp: ticket.profiles?.whatsapp || ""
+      }));
+      
+      setTickets(formattedTickets || []);
     } catch (error: any) {
       console.error("Erro ao buscar tickets:", error);
       toast({
@@ -38,28 +47,46 @@ export const useTicketQueries = (
   const getTicket = async (ticketId: string) => {
     setLoading(true);
     try {
-      // Buscar o ticket
+      // Buscar o ticket com informações do usuário
       const { data: ticketData, error: ticketError } = await supabase
         .from("support_tickets")
-        .select("*")
+        .select("*, profiles:user_id(*)")
         .eq("id", ticketId)
         .single();
         
       if (ticketError) throw ticketError;
       
-      // Buscar as mensagens do ticket
+      // Buscar as mensagens do ticket com informações do usuário
       const { data: messagesData, error: messagesError } = await supabase
         .from("ticket_responses")
-        .select("*")
+        .select("*, profiles:user_id(*)")
         .eq("ticket_id", ticketId)
         .order("created_at", { ascending: true });
         
       if (messagesError) throw messagesError;
       
       // Formatar o resultado
+      const ticket: any = ticketData;
+      const formattedTicket: Ticket = {
+        ...ticket,
+        user_name: ticket.profiles?.full_name || "Usuário Desconhecido",
+        user_email: ticket.profiles?.email || "",
+        user_whatsapp: ticket.profiles?.whatsapp || ""
+      };
+      
+      // Formatar as mensagens
+      const formattedMessages: TicketMessage[] = (messagesData || []).map((message: any) => ({
+        ...message,
+        user: {
+          full_name: message.profiles?.full_name,
+          email: message.profiles?.email
+        }
+      }));
+      
+      // Formatar o resultado final
       const result: TicketWithMessages = {
-        ...ticketData as Ticket,
-        messages: messagesData as TicketMessage[] || []
+        ...formattedTicket,
+        messages: formattedMessages
       };
       
       return result;

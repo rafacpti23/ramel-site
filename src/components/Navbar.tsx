@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -60,10 +61,10 @@ const Navbar = () => {
           >
             Nossos Serviços
           </button>
-          <Link to="/agenda-pro-plus" className="text-sm font-medium transition-colors hover:text-ramel">
+          <Link to="/produtos/agenda-pro-plus" className="text-sm font-medium transition-colors hover:text-ramel">
             Agenda Pro+
           </Link>
-          <Link to="/delivery-flow" className="text-sm font-medium transition-colors hover:text-ramel">
+          <Link to="/produtos/deliveryflow" className="text-sm font-medium transition-colors hover:text-ramel">
             DeliveryFlow
           </Link>
           <button 
@@ -125,14 +126,14 @@ const Navbar = () => {
               Nossos Serviços
             </button>
             <Link 
-              to="/agenda-pro-plus" 
+              to="/produtos/agenda-pro-plus" 
               className="px-3 py-2 rounded-md hover:bg-white/5"
               onClick={() => setMenuOpen(false)}
             >
               Agenda Pro+
             </Link>
             <Link 
-              to="/delivery-flow" 
+              to="/produtos/deliveryflow" 
               className="px-3 py-2 rounded-md hover:bg-white/5"
               onClick={() => setMenuOpen(false)}
             >

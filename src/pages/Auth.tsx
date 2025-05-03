@@ -20,11 +20,13 @@ const Auth = () => {
       // Adicionado log para debug
       console.log("Auth page effect - User:", user.email, "isPaid:", isPaid);
       
-      if (isPaid) {
+      // Verifica se o usuário está aprovado para acessar a área de membros
+      if (isPaid === true) {
         navigate("/membro");
-      } else {
-        navigate("/membro/aguardando");
+      } else if (isPaid === false) {
+        navigate("/aguardando-aprovacao");
       }
+      // Se isPaid for undefined, aguarda até que o valor seja carregado
     }
   }, [user, loading, navigate, isPaid]);
 

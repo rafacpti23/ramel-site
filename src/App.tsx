@@ -26,8 +26,8 @@ function App() {
           <Route path="/auth" element={<Auth />} />
           <Route path="/aguardando-aprovacao" element={<WaitingApproval />} />
           <Route path="/produtos/deliveryflow" element={<DeliveryFlow />} />
-          <Route path="/produtos/agendapro" element={<AgendaPro />} />
           <Route path="/produtos/agenda-pro-plus" element={<AgendaProPlus />} />
+          <Route path="/produtos/agendapro" element={<AgendaPro />} />
           <Route path="/membro" element={<MemberArea />} />
           <Route path="/membro/admin/arquivos" element={<FileManagement />} />
           <Route path="/membro/admin/videos" element={<VideoManagement />} />
