@@ -33,6 +33,7 @@ export interface Deal {
   expected_close_date?: string;
   updated_at: string;
   notes?: string;
+  customer?: Customer;
 }
 
 export interface CustomerWithDeals extends Customer {

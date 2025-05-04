@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -25,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import DealForm from "./forms/DealForm";
+import { StatusBadge } from "./components/StatusBadge";
 
 const DealsList = () => {
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -96,7 +96,7 @@ const DealsList = () => {
   const filteredDeals = deals.filter(deal => {
     const matchesSearch = 
       deal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (deal.crm_customers?.name || "").toLowerCase().includes(searchTerm.toLowerCase());
+      (deal.customer?.name || "").toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter ? deal.status === statusFilter : true;
     
@@ -243,7 +243,7 @@ const DealsList = () => {
               {filteredDeals.map((deal: any) => (
                 <TableRow key={deal.id}>
                   <TableCell className="font-medium">
-                    {deal.crm_customers?.name || "Cliente Desconhecido"}
+                    {deal.customer?.name || "Cliente Desconhecido"}
                   </TableCell>
                   <TableCell>{deal.title}</TableCell>
                   <TableCell>{formatCurrency(deal.value)}</TableCell>

@@ -1,16 +1,15 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Customer, Deal, Interaction } from "@/types/crm";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { Loader2, Edit, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatCurrency } from "@/lib/utils";
 import DealForm from "./forms/DealForm";
 import InteractionForm from "./forms/InteractionForm";
+import { StatusBadge } from "./components/StatusBadge";
 
 interface CustomerDetailProps {
   customerId: string;
@@ -83,8 +82,12 @@ const CustomerDetail = ({ customerId, onEdit, onClose }: CustomerDetailProps) =>
       const { data, error } = await supabase
         .from('crm_deals')
         .insert({
-          ...deal,
           customer_id: customerId,
+          title: deal.title!,
+          value: deal.value || 0,
+          status: deal.status,
+          expected_close_date: deal.expected_close_date,
+          notes: deal.notes,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
@@ -119,8 +122,10 @@ const CustomerDetail = ({ customerId, onEdit, onClose }: CustomerDetailProps) =>
       const { data, error } = await supabase
         .from('crm_interactions')
         .insert({
-          ...interaction,
           customer_id: customerId,
+          type: interaction.type!,
+          description: interaction.description!,
+          date: interaction.date!,
           created_by: userData.user.id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -147,53 +152,6 @@ const CustomerDetail = ({ customerId, onEdit, onClose }: CustomerDetailProps) =>
     }
   };
   
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'ativo':
-        return <Badge className="bg-green-500">Ativo</Badge>;
-      case 'inativo':
-        return <Badge variant="outline">Inativo</Badge>;
-      case 'potencial':
-        return <Badge className="bg-blue-500">Potencial</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
-  
-  const getDealStatusBadge = (status: string) => {
-    switch (status) {
-      case 'prospeccao':
-        return <Badge className="bg-purple-500">Prospecção</Badge>;
-      case 'qualificado':
-        return <Badge className="bg-blue-500">Qualificado</Badge>;
-      case 'proposta':
-        return <Badge className="bg-yellow-500">Proposta</Badge>;
-      case 'negociacao':
-        return <Badge className="bg-orange-500">Negociação</Badge>;
-      case 'fechado_ganho':
-        return <Badge className="bg-green-500">Fechado (Ganho)</Badge>;
-      case 'fechado_perdido':
-        return <Badge className="bg-destructive">Fechado (Perdido)</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
-  
-  const getInteractionTypeBadge = (type: string) => {
-    switch (type) {
-      case 'email':
-        return <Badge className="bg-blue-500">Email</Badge>;
-      case 'ligacao':
-        return <Badge className="bg-green-500">Ligação</Badge>;
-      case 'reuniao':
-        return <Badge className="bg-purple-500">Reunião</Badge>;
-      case 'whatsapp':
-        return <Badge className="bg-green-600">WhatsApp</Badge>;
-      default:
-        return <Badge variant="secondary">Outro</Badge>;
-    }
-  };
-  
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -217,7 +175,7 @@ const CustomerDetail = ({ customerId, onEdit, onClose }: CustomerDetailProps) =>
         <div>
           <h2 className="text-2xl font-bold">{customer.name}</h2>
           <div className="flex items-center gap-2 mt-1">
-            {getStatusBadge(customer.status)}
+            <StatusBadge status={customer.status} type="customer" />
             {customer.company && <span className="text-muted-foreground">{customer.company}</span>}
           </div>
         </div>
@@ -277,7 +235,7 @@ const CustomerDetail = ({ customerId, onEdit, onClose }: CustomerDetailProps) =>
                     <h4 className="font-medium">{deal.title}</h4>
                     <div className="text-right">
                       <p className="font-bold">{formatCurrency(deal.value)}</p>
-                      {getDealStatusBadge(deal.status)}
+                      <StatusBadge status={deal.status} type="deal" />
                     </div>
                   </div>
                   {deal.expected_close_date && (
@@ -313,7 +271,7 @@ const CustomerDetail = ({ customerId, onEdit, onClose }: CustomerDetailProps) =>
                 <div key={interaction.id} className="border rounded-lg p-3">
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-2">
-                      {getInteractionTypeBadge(interaction.type)}
+                      <StatusBadge status={interaction.type} type="interaction" />
                       <p className="text-sm text-muted-foreground">
                         {new Date(interaction.date).toLocaleString('pt-BR')}
                       </p>
