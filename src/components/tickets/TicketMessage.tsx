@@ -1,5 +1,6 @@
 
 import { TicketMessage as TicketMessageType } from "@/types/ticket";
+import { MessageSquare as MessageSquareIcon } from "lucide-react";
 
 interface TicketMessageProps {
   message: TicketMessageType;
@@ -43,6 +44,3 @@ export const TicketMessage = ({ message, currentUserName }: TicketMessageProps) 
     </div>
   );
 };
-
-// Importação necessária do ícone do Lucide React
-import { MessageSquare as MessageSquareIcon } from "lucide-react";

@@ -16,22 +16,38 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { TicketsTable } from "./tickets/TicketsTable";
 import { Ticket } from "@/types/ticket";
+import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const AdminTicketsList = () => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [ticketToDelete, setTicketToDelete] = useState<string | null>(null);
+  const { isAdmin } = useAuth();
+  const navigate = useNavigate();
   
   useEffect(() => {
+    // Verificar se o usuário é administrador
+    if (!isAdmin) {
+      toast({
+        title: "Acesso negado",
+        description: "Apenas administradores podem acessar esta página.",
+        variant: "destructive",
+      });
+      navigate("/membro");
+      return;
+    }
+    
     fetchTickets();
-  }, []);
+  }, [isAdmin, navigate]);
   
   const fetchTickets = async () => {
     setLoading(true);
     setRefreshing(true);
     try {
       // Buscar todos os tickets com informações do usuário
+      // Corrigindo o relacionamento com profiles
       const { data, error } = await supabase
         .from("support_tickets")
         .select(`

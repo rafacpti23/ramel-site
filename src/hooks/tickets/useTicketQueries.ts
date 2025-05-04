@@ -16,7 +16,14 @@ export const useTicketQueries = (
       
       const { data, error } = await supabase
         .from("support_tickets")
-        .select("*, profiles:user_id(*)")
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            email,
+            whatsapp
+          )
+        `)
         .eq("user_id", user.user.id)
         .order("created_at", { ascending: false });
         
@@ -50,7 +57,14 @@ export const useTicketQueries = (
       // Buscar o ticket com informações do usuário
       const { data: ticketData, error: ticketError } = await supabase
         .from("support_tickets")
-        .select("*, profiles:user_id(*)")
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            email,
+            whatsapp
+          )
+        `)
         .eq("id", ticketId)
         .single();
         
@@ -59,7 +73,13 @@ export const useTicketQueries = (
       // Buscar as mensagens do ticket com informações do usuário
       const { data: messagesData, error: messagesError } = await supabase
         .from("ticket_responses")
-        .select("*, profiles:user_id(*)")
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            email
+          )
+        `)
         .eq("ticket_id", ticketId)
         .order("created_at", { ascending: true });
         
