@@ -1,8 +1,7 @@
 
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Loader2, RefreshCw } from "lucide-react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,6 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { AlertDialogTrigger } from "@radix-ui/react-alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { TicketsTable } from "./tickets/TicketsTable";
 import { Ticket } from "@/types/ticket";
@@ -47,7 +47,6 @@ const AdminTicketsList = () => {
     setRefreshing(true);
     try {
       // Buscar todos os tickets com informações do usuário
-      // Corrigindo o relacionamento com profiles
       const { data, error } = await supabase
         .from("support_tickets")
         .select(`
@@ -72,7 +71,7 @@ const AdminTicketsList = () => {
       
       setTickets(formattedTickets);
     } catch (error: any) {
-      console.error('Erro ao buscar tickets:', error);
+      console.error("Erro ao carregar tickets:", error);
       toast({
         title: "Erro ao carregar tickets",
         description: error.message,
@@ -84,7 +83,7 @@ const AdminTicketsList = () => {
     }
   };
   
-  const updateTicketStatus = async (ticketId: string, newStatus: string): Promise<void> => {
+  const handleUpdateStatus = async (ticketId: string, newStatus: string) => {
     try {
       const { error } = await supabase
         .from("support_tickets")
@@ -93,16 +92,13 @@ const AdminTicketsList = () => {
         
       if (error) throw error;
       
-      // Atualizar o estado local
-      setTickets((prev) =>
-        prev.map((ticket) =>
-          ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket
-        )
-      );
+      setTickets(tickets.map(ticket => 
+        ticket.id === ticketId ? { ...ticket, status: newStatus } : ticket
+      ));
       
       toast({
         title: "Status atualizado",
-        description: `O status do ticket foi alterado para ${newStatus}`,
+        description: `O ticket foi marcado como ${newStatus}.`
       });
     } catch (error: any) {
       console.error("Erro ao atualizar status:", error);
@@ -111,7 +107,6 @@ const AdminTicketsList = () => {
         description: error.message,
         variant: "destructive",
       });
-      throw error;
     }
   };
   
@@ -133,16 +128,16 @@ const AdminTicketsList = () => {
         
       if (error) throw error;
       
-      // Atualizar o estado local
-      setTickets((prev) => prev.filter((ticket) => ticket.id !== ticketId));
-      setTicketToDelete(null);
+      setTickets(tickets.filter(ticket => ticket.id !== ticketId));
       
       toast({
         title: "Ticket excluído",
-        description: "O ticket foi excluído com sucesso",
+        description: "O ticket foi removido com sucesso."
       });
+      
+      setTicketToDelete(null);
     } catch (error: any) {
-      console.error('Erro ao excluir ticket:', error);
+      console.error("Erro ao excluir ticket:", error);
       toast({
         title: "Erro ao excluir ticket",
         description: error.message,
@@ -151,59 +146,54 @@ const AdminTicketsList = () => {
     }
   };
   
+  const handleDeleteConfirmation = (ticketId: string) => {
+    setTicketToDelete(ticketId);
+  };
+  
   return (
-    <>
-      <div className="flex justify-end mb-4">
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold">Tickets de Suporte ({tickets.length})</h2>
         <Button 
           variant="outline" 
-          size="sm" 
-          onClick={fetchTickets} 
+          onClick={() => fetchTickets()}
           disabled={refreshing}
-          className="flex items-center gap-1"
         >
-          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-          {refreshing ? "Atualizando..." : "Atualizar Lista"}
+          {refreshing ? "Atualizando..." : "Atualizar"}
         </Button>
       </div>
       
       {loading ? (
-        <div className="text-center py-4">
-          <Loader2 className="h-4 w-4 animate-spin mx-auto" />
-          <p className="mt-2">Carregando tickets...</p>
+        <div className="flex justify-center p-8">
+          <div className="animate-spin h-8 w-8 border-4 border-ramel border-opacity-50 border-t-ramel rounded-full"></div>
         </div>
       ) : tickets.length === 0 ? (
-        <p className="text-center py-4">Nenhum ticket de suporte encontrado.</p>
+        <p className="text-center py-8 text-muted-foreground">Nenhum ticket de suporte encontrado.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <TicketsTable
-            tickets={tickets}
-            onUpdateStatus={updateTicketStatus}
-            onDelete={(ticketId) => setTicketToDelete(ticketId)}
-          />
-        </div>
+        <TicketsTable 
+          tickets={tickets}
+          onUpdateStatus={handleUpdateStatus}
+          onDelete={handleDeleteConfirmation}
+        />
       )}
       
       <AlertDialog open={!!ticketToDelete} onOpenChange={(open) => !open && setTicketToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir Ticket</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
             <AlertDialogDescription>
               Tem certeza que deseja excluir este ticket? Esta ação não pode ser desfeita.
-              Todas as respostas associadas a este ticket também serão excluídas.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={() => ticketToDelete && handleDelete(ticketToDelete)}
-              className="bg-red-500 hover:bg-red-600"
-            >
+            <AlertDialogAction onClick={() => ticketToDelete && handleDelete(ticketToDelete)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 };
 

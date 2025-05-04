@@ -107,7 +107,7 @@ export const useTicketMutations = (
     }
   };
   
-  const addMessage = async (ticketId: string, content: string) => {
+  const addMessage = async (ticketId: string, content: string, isAdmin = false) => {
     try {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData?.user) {
@@ -121,6 +121,7 @@ export const useTicketMutations = (
             ticket_id: ticketId,
             user_id: userData.user.id,
             content,
+            is_admin: isAdmin
           },
         ])
         .select();

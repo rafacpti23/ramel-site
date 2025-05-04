@@ -16,6 +16,7 @@ import AgendaPro from "@/pages/AgendaPro";
 import AgendaProPlus from "@/pages/AgendaProPlus";
 import { Toaster } from "@/components/ui/toaster"
 import WaitingApproval from "@/pages/WaitingApproval";
+import CrmPage from "@/pages/CrmPage";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
           <Route path="/membro/suporte/:ticketId" element={<TicketDetail />} />
           <Route path="/membro/admin" element={<AdminPage />} />
           <Route path="/membro/admin/configuracoes" element={<SystemConfigPage />} />
+          <Route path="/membro/admin/crm" element={<CrmPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
