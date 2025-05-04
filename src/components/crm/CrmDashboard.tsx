@@ -97,40 +97,55 @@ const CrmDashboard = () => {
       
       if (dealsError) throw dealsError;
       
-      // Buscar contagem de clientes por status
-      const { data: customersByStatus, error: customerStatusError } = await supabase
+      // Calcular estatísticas de clientes por status
+      const { data: customerStatusData, error: customerStatusError } = await supabase
         .from('crm_customers')
-        .select('status, count')
-        .group('status');
+        .select('status');
       
       if (customerStatusError) throw customerStatusError;
       
-      // Buscar contagem e valor total de negócios por status
-      const { data: dealsByStatus, error: dealStatusError } = await supabase
+      // Processar dados de status de clientes manualmente
+      const customerStatusCounts: {[key: string]: number} = {};
+      customerStatusData?.forEach(customer => {
+        const status = customer.status;
+        customerStatusCounts[status] = (customerStatusCounts[status] || 0) + 1;
+      });
+      
+      const formattedCustomersByStatus = Object.keys(customerStatusCounts).map(status => ({
+        name: customerStatusNames[status as keyof typeof customerStatusNames] || status,
+        value: customerStatusCounts[status]
+      }));
+      
+      // Calcular estatísticas de negócios por status
+      const { data: dealStatusData, error: dealStatusError } = await supabase
         .from('crm_deals')
-        .select('status, count, sum(value)')
-        .group('status');
+        .select('status, value');
       
       if (dealStatusError) throw dealStatusError;
+      
+      // Processar dados de status de negócios manualmente
+      const dealStatusCounts: {[key: string]: {count: number, sum: number}} = {};
+      dealStatusData?.forEach(deal => {
+        const status = deal.status;
+        if (!dealStatusCounts[status]) {
+          dealStatusCounts[status] = { count: 0, sum: 0 };
+        }
+        dealStatusCounts[status].count += 1;
+        dealStatusCounts[status].sum += Number(deal.value) || 0;
+      });
+      
+      const formattedDealsByStatus = Object.keys(dealStatusCounts).map(status => ({
+        name: dealStatusNames[status as keyof typeof dealStatusNames] || status,
+        value: dealStatusCounts[status].count,
+        amount: dealStatusCounts[status].sum
+      }));
       
       // Processar os dados
       const closedDeals = deals?.filter(d => d.status === 'fechado_ganho' || d.status === 'fechado_perdido') || [];
       const openDeals = deals?.filter(d => d.status !== 'fechado_ganho' && d.status !== 'fechado_perdido') || [];
       const totalRevenue = deals
         ?.filter(d => d.status === 'fechado_ganho')
-        .reduce((sum, deal) => sum + (deal.value || 0), 0) || 0;
-      
-      // Formatar dados para os gráficos
-      const formattedCustomersByStatus = customersByStatus?.map(item => ({
-        name: customerStatusNames[item.status as keyof typeof customerStatusNames] || item.status,
-        value: item.count
-      })) || [];
-      
-      const formattedDealsByStatus = dealsByStatus?.map(item => ({
-        name: dealStatusNames[item.status as keyof typeof dealStatusNames] || item.status,
-        value: item.count,
-        amount: item.sum || 0
-      })) || [];
+        .reduce((sum, deal) => sum + (Number(deal.value) || 0), 0) || 0;
       
       setStats({
         totalCustomers: customerCount || 0,
