@@ -1,20 +1,19 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Deal, Customer } from "@/types/crm";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Loader2, Plus, Search } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from "@/components/ui/table";
+import { Loader2, Plus } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
@@ -25,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import DealForm from "./forms/DealForm";
 import { StatusBadge } from "./components/StatusBadge";
+import { SearchInput } from "./components/SearchInput";
 
 const DealsList = () => {
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -125,14 +125,21 @@ const DealsList = () => {
     if (!selectedCustomerId) return;
     
     try {
+      // Aqui está a correção - garantindo que todos os campos obrigatórios estejam presentes
+      const newDeal = {
+        customer_id: selectedCustomerId,
+        title: deal.title!, // Garantir que title não seja undefined
+        value: deal.value || 0,
+        status: deal.status || "prospeccao",
+        expected_close_date: deal.expected_close_date,
+        notes: deal.notes,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
       const { data, error } = await supabase
         .from('crm_deals')
-        .insert({
-          ...deal,
-          customer_id: selectedCustomerId,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
+        .insert(newDeal)
         .select(`
           *,
           crm_customers:customer_id (
@@ -163,25 +170,6 @@ const DealsList = () => {
     }
   };
 
-  const getDealStatusBadge = (status: string) => {
-    switch (status) {
-      case 'prospeccao':
-        return <Badge className="bg-purple-500">Prospecção</Badge>;
-      case 'qualificado':
-        return <Badge className="bg-blue-500">Qualificado</Badge>;
-      case 'proposta':
-        return <Badge className="bg-yellow-500">Proposta</Badge>;
-      case 'negociacao':
-        return <Badge className="bg-orange-500">Negociação</Badge>;
-      case 'fechado_ganho':
-        return <Badge className="bg-green-500">Fechado (Ganho)</Badge>;
-      case 'fechado_perdido':
-        return <Badge className="bg-destructive">Fechado (Perdido)</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
-
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -194,12 +182,10 @@ const DealsList = () => {
 
       <div className="flex flex-col md:flex-row gap-4 mb-4">
         <div className="relative flex-grow">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Buscar negócios..."
-            className="pl-10"
+          <SearchInput 
             value={searchTerm}
             onChange={handleSearch}
+            placeholder="Buscar negócios..."
           />
         </div>
         <Select onValueChange={handleStatusFilterChange} defaultValue="todos">
@@ -247,7 +233,9 @@ const DealsList = () => {
                   </TableCell>
                   <TableCell>{deal.title}</TableCell>
                   <TableCell>{formatCurrency(deal.value)}</TableCell>
-                  <TableCell>{getDealStatusBadge(deal.status)}</TableCell>
+                  <TableCell>
+                    <StatusBadge status={deal.status} type="deal" />
+                  </TableCell>
                   <TableCell>{new Date(deal.created_at).toLocaleDateString('pt-BR')}</TableCell>
                   <TableCell>
                     {deal.expected_close_date
