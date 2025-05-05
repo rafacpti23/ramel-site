@@ -111,8 +111,11 @@ const FileManagementCard = ({ file }: FileCardProps) => {
               className="h-12 w-12 rounded-full object-cover"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.src = ""; 
-                target.className = "hidden";
+                target.style.display = "none";
+                // Mostrar o ícone alternativo quando a imagem falhar
+                const iconContainer = document.createElement('div');
+                iconContainer.className = `p-3 rounded-full bg-gradient-to-br ${color}`;
+                target.parentNode?.appendChild(iconContainer);
               }}
             />
           ) : (

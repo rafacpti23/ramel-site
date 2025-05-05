@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -46,7 +45,7 @@ const AdminTicketsList = () => {
     setLoading(true);
     setRefreshing(true);
     try {
-      // Buscar todos os tickets com informações do usuário
+      // Buscar todos os tickets com informações do usuário, sem filtro de usuário
       const { data, error } = await supabase
         .from("support_tickets")
         .select(`
@@ -60,6 +59,8 @@ const AdminTicketsList = () => {
         .order("created_at", { ascending: false });
         
       if (error) throw error;
+      
+      console.log("Tickets carregados na área administrativa:", data);
       
       // Formatar os dados para corresponder ao tipo Ticket
       const formattedTickets: Ticket[] = data.map((ticket: any) => ({

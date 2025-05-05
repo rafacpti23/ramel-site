@@ -29,6 +29,8 @@ export const useTicketQueries = (
         
       if (error) throw error;
       
+      console.log("Tickets do usuário carregados:", data);
+      
       // Formatar os dados para corresponder ao tipo Ticket
       const formattedTickets: Ticket[] = data.map((ticket: any) => ({
         ...ticket,

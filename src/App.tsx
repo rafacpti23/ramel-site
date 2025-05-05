@@ -17,8 +17,38 @@ import AgendaProPlus from "@/pages/AgendaProPlus";
 import { Toaster } from "@/components/ui/toaster"
 import WaitingApproval from "@/pages/WaitingApproval";
 import CrmPage from "@/pages/CrmPage";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { LiveChatService } from "@/services/LiveChatService";
 
 function App() {
+  // Carrega as configurações do sistema e inicializa o chat ao carregar a aplicação
+  useEffect(() => {
+    const loadSystemConfig = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("system_config")
+          .select("*")
+          .limit(1)
+          .single();
+        
+        if (error) throw error;
+        
+        if (data) {
+          LiveChatService.updateLiveChat(
+            data.live_chat_enabled ?? true,
+            data.chat_button_text ?? "Estamos aqui!",
+            data.live_chat_code ?? ""
+          );
+        }
+      } catch (error) {
+        console.error("Erro ao carregar configurações do sistema:", error);
+      }
+    };
+
+    loadSystemConfig();
+  }, []);
+
   return (
     <AuthProvider>
       <BrowserRouter>
