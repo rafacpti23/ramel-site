@@ -12,7 +12,7 @@ interface Category {
   id: string;
   name: string;
   description: string | null;
-  image_url?: string | null;
+  image_url: string | null;
 }
 
 const CategoryManagement = () => {

@@ -38,7 +38,13 @@ const Footer = () => {
         
         <div className="flex justify-center mt-8 pt-8 border-t border-white/5">
           <a href="https://www.kqzyfj.com/click-101209511-13484398" target="_top" className="block">
-            <img src="https://www.lduhtrp.net/image-101209511-13484398" width="728" height="90" alt="Banner promocional" border="0" className="max-w-full h-auto" />
+            <img 
+              src="https://www.lduhtrp.net/image-101209511-13484398" 
+              width="728" 
+              height="90" 
+              alt="Banner promocional" 
+              className="max-w-full h-auto border-0" 
+            />
           </a>
         </div>
         
