@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -20,6 +19,10 @@ interface SupportFile {
   file_url: string;
   category_id: string;
   created_at: string;
+  categories?: {
+    name: string;
+    image_url: string | null;
+  }
 }
 
 interface Category {
@@ -69,10 +72,13 @@ const FileManagement = () => {
   const fetchData = async () => {
     setLoadingData(true);
     try {
-      // Fetch files
+      // Fetch files - agora explicitamente selecionando a URL da imagem da categoria
       const { data: filesData, error: filesError } = await supabase
         .from('support_files')
-        .select('*, categories(name, image_url)')
+        .select(`
+          *,
+          categories(name, image_url)
+        `)
         .order('created_at', { ascending: false });
         
       if (filesError) throw filesError;
@@ -127,7 +133,21 @@ const FileManagement = () => {
         
       if (error) throw error;
       
-      setFiles([...(data as SupportFile[]), ...files]);
+      // Buscar o arquivo recém-criado com os dados da categoria
+      if (data && data[0]) {
+        const { data: fileWithCategory, error: fileError } = await supabase
+          .from('support_files')
+          .select(`*, categories(name, image_url)`)
+          .eq('id', data[0].id)
+          .single();
+          
+        if (!fileError && fileWithCategory) {
+          setFiles([fileWithCategory as SupportFile, ...files]);
+        } else {
+          setFiles([...(data as SupportFile[]), ...files]);
+        }
+      }
+      
       resetForm();
       
       toast({
@@ -360,14 +380,18 @@ const FileManagement = () => {
                           </div>
                         </td>
                         <td className="py-3 px-4">
-                          {(file as any).categories?.name || "Sem categoria"}
+                          {file.categories?.name || "Sem categoria"}
                         </td>
                         <td className="py-3 px-4">
-                          {(file as any).categories?.image_url ? (
+                          {file.categories?.image_url ? (
                             <img 
-                              src={(file as any).categories.image_url} 
-                              alt={(file as any).categories.name}
+                              src={file.categories.image_url} 
+                              alt={file.categories.name}
                               className="h-16 w-auto object-cover rounded-md"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = "https://placehold.co/400x300?text=Sem+imagem";
+                              }}
                             />
                           ) : (
                             <span className="text-muted-foreground text-sm">Sem imagem</span>

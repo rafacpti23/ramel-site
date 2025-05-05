@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { X, Image, Loader2 } from "lucide-react";
+import { X, Image, Loader2, Edit, Check } from "lucide-react";
 
 interface Category {
   id: string;
@@ -21,6 +21,12 @@ const CategoryManagement = () => {
   const [newCategoryDescription, setNewCategoryDescription] = useState("");
   const [newCategoryImageUrl, setNewCategoryImageUrl] = useState("");
   const [loading, setLoading] = useState(true);
+  
+  // Estados para edição
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editImageUrl, setEditImageUrl] = useState("");
   
   useEffect(() => {
     fetchCategories();
@@ -75,7 +81,9 @@ const CategoryManagement = () => {
         
       if (error) throw error;
       
-      setCategories([...(data as Category[]), ...categories]);
+      const updatedCategories = [...categories];
+      updatedCategories.unshift(...(data as Category[]));
+      setCategories(updatedCategories);
       resetForm();
       
       toast({
@@ -87,6 +95,66 @@ const CategoryManagement = () => {
       toast({
         title: "Erro ao adicionar categoria",
         description: error.message || "Não foi possível adicionar a categoria.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const handleStartEdit = (category: Category) => {
+    setEditingCategoryId(category.id);
+    setEditName(category.name);
+    setEditDescription(category.description || "");
+    setEditImageUrl(category.image_url || "");
+  };
+  
+  const handleCancelEdit = () => {
+    setEditingCategoryId(null);
+  };
+  
+  const handleUpdateCategory = async (categoryId: string) => {
+    if (!editName.trim()) {
+      toast({
+        title: "Nome obrigatório",
+        description: "O nome da categoria é obrigatório.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .update({
+          name: editName,
+          description: editDescription || null,
+          image_url: editImageUrl || null
+        })
+        .eq('id', categoryId);
+        
+      if (error) throw error;
+      
+      // Atualizar a lista local
+      const updatedCategories = categories.map(cat => 
+        cat.id === categoryId ? {
+          ...cat,
+          name: editName,
+          description: editDescription || null,
+          image_url: editImageUrl || null
+        } : cat
+      );
+      
+      setCategories(updatedCategories);
+      setEditingCategoryId(null);
+      
+      toast({
+        title: "Categoria atualizada",
+        description: "A categoria foi atualizada com sucesso.",
+      });
+    } catch (error: any) {
+      console.error('Erro ao atualizar categoria:', error);
+      toast({
+        title: "Erro ao atualizar categoria",
+        description: error.message || "Não foi possível atualizar a categoria.",
         variant: "destructive",
       });
     }
@@ -198,36 +266,119 @@ const CategoryManagement = () => {
               <div className="space-y-4">
                 {categories.map((category) => (
                   <div key={category.id} className="flex flex-col p-4 border border-white/10 rounded-md">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-grow">
-                        <h3 className="font-medium">{category.name}</h3>
-                        {category.description && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {category.description}
-                          </p>
+                    {editingCategoryId === category.id ? (
+                      // Modo de edição
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor={`edit-name-${category.id}`}>Nome</Label>
+                          <Input 
+                            id={`edit-name-${category.id}`}
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="mt-1"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor={`edit-desc-${category.id}`}>Descrição</Label>
+                          <Input 
+                            id={`edit-desc-${category.id}`}
+                            value={editDescription}
+                            onChange={(e) => setEditDescription(e.target.value)}
+                            className="mt-1"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor={`edit-img-${category.id}`}>URL da Imagem</Label>
+                          <Input 
+                            id={`edit-img-${category.id}`}
+                            value={editImageUrl}
+                            onChange={(e) => setEditImageUrl(e.target.value)}
+                            className="mt-1"
+                          />
+                        </div>
+                        
+                        {editImageUrl && (
+                          <div>
+                            <p className="text-sm font-medium mb-2">Pré-visualização</p>
+                            <img 
+                              src={editImageUrl}
+                              alt="Pré-visualização"
+                              className="h-24 w-auto object-cover rounded-md"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = "https://placehold.co/400x300?text=Imagem+Inválida";
+                              }}
+                            />
+                          </div>
                         )}
+                        
+                        <div className="flex gap-2 justify-end mt-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={handleCancelEdit}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button 
+                            size="sm"
+                            onClick={() => handleUpdateCategory(category.id)}
+                          >
+                            <Check className="h-4 w-4 mr-1" /> Salvar
+                          </Button>
+                        </div>
                       </div>
-                      <Button 
-                        variant="destructive" 
-                        size="sm"
-                        onClick={() => handleDeleteCategory(category.id)}
-                      >
-                        <X className="h-4 w-4" />
-                        <span className="sr-only">Excluir</span>
-                      </Button>
-                    </div>
-                    
-                    {category.image_url && (
-                      <div className="mt-4">
-                        <p className="text-sm font-medium mb-2 flex items-center gap-1">
-                          <Image className="h-4 w-4" /> Imagem
-                        </p>
-                        <img 
-                          src={category.image_url} 
-                          alt={category.name} 
-                          className="h-24 w-auto object-cover rounded-md"
-                        />
-                      </div>
+                    ) : (
+                      // Modo de visualização
+                      <>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-grow">
+                            <h3 className="font-medium">{category.name}</h3>
+                            {category.description && (
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {category.description}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleStartEdit(category)}
+                            >
+                              <Edit className="h-4 w-4" />
+                              <span className="sr-only">Editar</span>
+                            </Button>
+                            <Button 
+                              variant="destructive" 
+                              size="sm"
+                              onClick={() => handleDeleteCategory(category.id)}
+                            >
+                              <X className="h-4 w-4" />
+                              <span className="sr-only">Excluir</span>
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        {category.image_url && (
+                          <div className="mt-4">
+                            <p className="text-sm font-medium mb-2 flex items-center gap-1">
+                              <Image className="h-4 w-4" /> Imagem
+                            </p>
+                            <img 
+                              src={category.image_url} 
+                              alt={category.name} 
+                              className="h-24 w-auto object-cover rounded-md"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = "https://placehold.co/400x300?text=Imagem+Indisponível";
+                              }}
+                            />
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 ))}

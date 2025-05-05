@@ -12,6 +12,7 @@ interface FileCardProps {
     description: string;
     file_url: string;
     category: string;
+    category_image?: string | null;
     created_at: string;
     file_type: string;
   };
@@ -103,9 +104,22 @@ const FileManagementCard = ({ file }: FileCardProps) => {
             </CardDescription>
           </div>
           
-          <div className={`p-3 rounded-full bg-gradient-to-br ${color}`}>
-            {icon}
-          </div>
+          {file.category_image ? (
+            <img 
+              src={file.category_image}
+              alt={file.category}
+              className="h-12 w-12 rounded-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = ""; 
+                target.className = "hidden";
+              }}
+            />
+          ) : (
+            <div className={`p-3 rounded-full bg-gradient-to-br ${color}`}>
+              {icon}
+            </div>
+          )}
         </div>
       </CardHeader>
       
