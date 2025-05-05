@@ -10,7 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import MemberHeader from "@/components/MemberHeader";
-import { Loader2, ArrowLeft, Plus, FileText, X, Trash2 } from "lucide-react";
+import { Loader2, ArrowLeft, Plus, FileText, X, Trash2, Image } from "lucide-react";
+import Footer from "@/components/Footer";
 
 interface SupportFile {
   id: string;
@@ -25,6 +26,7 @@ interface Category {
   id: string;
   name: string;
   description: string | null;
+  image_url?: string | null;
 }
 
 const FileManagement = () => {
@@ -70,7 +72,7 @@ const FileManagement = () => {
       // Fetch files
       const { data: filesData, error: filesError } = await supabase
         .from('support_files')
-        .select('*, categories(name)')
+        .select('*, categories(name, image_url)')
         .order('created_at', { ascending: false });
         
       if (filesError) throw filesError;
@@ -338,6 +340,7 @@ const FileManagement = () => {
                     <tr className="border-b border-white/10">
                       <th className="text-left py-3 px-4">Título</th>
                       <th className="text-left py-3 px-4">Categoria</th>
+                      <th className="text-left py-3 px-4">Imagem da Categoria</th>
                       <th className="text-left py-3 px-4">Data de Adição</th>
                       <th className="text-left py-3 px-4">URL</th>
                       <th className="text-right py-3 px-4">Ações</th>
@@ -358,6 +361,17 @@ const FileManagement = () => {
                         </td>
                         <td className="py-3 px-4">
                           {(file as any).categories?.name || "Sem categoria"}
+                        </td>
+                        <td className="py-3 px-4">
+                          {(file as any).categories?.image_url ? (
+                            <img 
+                              src={(file as any).categories.image_url} 
+                              alt={(file as any).categories.name}
+                              className="h-16 w-auto object-cover rounded-md"
+                            />
+                          ) : (
+                            <span className="text-muted-foreground text-sm">Sem imagem</span>
+                          )}
                         </td>
                         <td className="py-3 px-4">
                           {new Date(file.created_at).toLocaleDateString('pt-BR')}
@@ -391,6 +405,8 @@ const FileManagement = () => {
           </CardContent>
         </Card>
       </main>
+      
+      <Footer />
     </div>
   );
 };

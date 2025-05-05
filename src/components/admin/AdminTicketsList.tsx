@@ -51,7 +51,7 @@ const AdminTicketsList = () => {
         .from("support_tickets")
         .select(`
           *,
-          profiles:user_id (
+          profiles(
             full_name,
             email,
             whatsapp

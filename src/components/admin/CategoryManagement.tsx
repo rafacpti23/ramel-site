@@ -1,23 +1,53 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { X } from "lucide-react";
+import { X, Image, Loader2 } from "lucide-react";
 
 interface Category {
   id: string;
   name: string;
   description: string | null;
+  image_url?: string | null;
 }
 
 const CategoryManagement = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryDescription, setNewCategoryDescription] = useState("");
+  const [newCategoryImageUrl, setNewCategoryImageUrl] = useState("");
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+  
+  const fetchCategories = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name');
+        
+      if (error) throw error;
+      
+      setCategories(data as Category[]);
+    } catch (error: any) {
+      console.error('Erro ao carregar categorias:', error);
+      toast({
+        title: "Erro ao carregar categorias",
+        description: error.message || "Não foi possível carregar as categorias.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +67,8 @@ const CategoryManagement = () => {
         .insert([
           { 
             name: newCategoryName,
-            description: newCategoryDescription || null
+            description: newCategoryDescription || null,
+            image_url: newCategoryImageUrl || null
           }
         ])
         .select();
@@ -45,8 +76,7 @@ const CategoryManagement = () => {
       if (error) throw error;
       
       setCategories([...(data as Category[]), ...categories]);
-      setNewCategoryName("");
-      setNewCategoryDescription("");
+      resetForm();
       
       toast({
         title: "Categoria adicionada",
@@ -91,6 +121,12 @@ const CategoryManagement = () => {
     }
   };
 
+  const resetForm = () => {
+    setNewCategoryName("");
+    setNewCategoryDescription("");
+    setNewCategoryImageUrl("");
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="md:col-span-1">
@@ -122,6 +158,19 @@ const CategoryManagement = () => {
                 />
               </div>
               
+              <div className="space-y-2">
+                <Label htmlFor="image_url">URL da Imagem (opcional)</Label>
+                <Input 
+                  id="image_url" 
+                  placeholder="https://exemplo.com/imagem.jpg" 
+                  value={newCategoryImageUrl}
+                  onChange={(e) => setNewCategoryImageUrl(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Forneça um link para uma imagem de banner/thumbnail para esta categoria
+                </p>
+              </div>
+              
               <Button type="submit" className="w-full">
                 Adicionar Categoria
               </Button>
@@ -137,30 +186,49 @@ const CategoryManagement = () => {
             <CardDescription>Gerencie as categorias de conteúdo</CardDescription>
           </CardHeader>
           <CardContent>
-            {categories.length === 0 ? (
+            {loading ? (
+              <div className="flex justify-center items-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-ramel" />
+              </div>
+            ) : categories.length === 0 ? (
               <p className="text-center text-muted-foreground py-4">
                 Nenhuma categoria cadastrada.
               </p>
             ) : (
               <div className="space-y-4">
                 {categories.map((category) => (
-                  <div key={category.id} className="flex items-center justify-between p-4 border border-white/10 rounded-md">
-                    <div>
-                      <h3 className="font-medium">{category.name}</h3>
-                      {category.description && (
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {category.description}
-                        </p>
-                      )}
+                  <div key={category.id} className="flex flex-col p-4 border border-white/10 rounded-md">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-grow">
+                        <h3 className="font-medium">{category.name}</h3>
+                        {category.description && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {category.description}
+                          </p>
+                        )}
+                      </div>
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => handleDeleteCategory(category.id)}
+                      >
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Excluir</span>
+                      </Button>
                     </div>
-                    <Button 
-                      variant="destructive" 
-                      size="sm"
-                      onClick={() => handleDeleteCategory(category.id)}
-                    >
-                      <X className="h-4 w-4" />
-                      <span className="sr-only">Excluir</span>
-                    </Button>
+                    
+                    {category.image_url && (
+                      <div className="mt-4">
+                        <p className="text-sm font-medium mb-2 flex items-center gap-1">
+                          <Image className="h-4 w-4" /> Imagem
+                        </p>
+                        <img 
+                          src={category.image_url} 
+                          alt={category.name} 
+                          className="h-24 w-auto object-cover rounded-md"
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
