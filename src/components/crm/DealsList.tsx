@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Deal, Customer } from "@/types/crm";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, Edit } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { 
   Table, 
@@ -25,6 +25,7 @@ import {
 import DealForm from "./forms/DealForm";
 import { StatusBadge } from "./components/StatusBadge";
 import { SearchInput } from "./components/SearchInput";
+import DealDetail from "./DealDetail";
 
 const DealsList = () => {
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -35,6 +36,8 @@ const DealsList = () => {
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false);
+  const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
+  const [isDealDetailOpen, setIsDealDetailOpen] = useState(false);
 
   useEffect(() => {
     fetchDeals();
@@ -119,6 +122,11 @@ const DealsList = () => {
     setSelectedCustomerId(customerId);
     setIsCustomerDialogOpen(false);
     setIsFormDialogOpen(true);
+  };
+
+  const handleViewDeal = (dealId: string) => {
+    setSelectedDealId(dealId);
+    setIsDealDetailOpen(true);
   };
 
   const handleSaveDeal = async (deal: Partial<Deal>) => {
@@ -223,11 +231,12 @@ const DealsList = () => {
                 <TableHead>Status</TableHead>
                 <TableHead>Data Criação</TableHead>
                 <TableHead>Previsão Fechamento</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredDeals.map((deal: any) => (
-                <TableRow key={deal.id}>
+                <TableRow key={deal.id} className="cursor-pointer hover:bg-secondary/20" onClick={() => handleViewDeal(deal.id)}>
                   <TableCell className="font-medium">
                     {deal.customer?.name || "Cliente Desconhecido"}
                   </TableCell>
@@ -241,6 +250,18 @@ const DealsList = () => {
                     {deal.expected_close_date
                       ? new Date(deal.expected_close_date).toLocaleDateString('pt-BR')
                       : "-"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewDeal(deal.id);
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -287,6 +308,27 @@ const DealsList = () => {
             onSave={handleSaveDeal}
             onCancel={() => setIsFormDialogOpen(false)}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Detalhes do negócio */}
+      <Dialog 
+        open={isDealDetailOpen} 
+        onOpenChange={(open) => {
+          setIsDealDetailOpen(open);
+          if (!open) setSelectedDealId(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detalhes do Negócio</DialogTitle>
+          </DialogHeader>
+          {selectedDealId && (
+            <DealDetail 
+              dealId={selectedDealId} 
+              onClose={() => setIsDealDetailOpen(false)} 
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>

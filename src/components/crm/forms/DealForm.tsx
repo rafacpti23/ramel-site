@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Deal } from "@/types/crm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,16 @@ const DealForm = ({ deal, onSave, onCancel }: DealFormProps) => {
   const [expectedCloseDate, setExpectedCloseDate] = useState(deal?.expected_close_date || "");
   const [notes, setNotes] = useState(deal?.notes || "");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  useEffect(() => {
+    if (deal) {
+      setTitle(deal.title);
+      setValue(deal.value.toString());
+      setStatus(deal.status);
+      setExpectedCloseDate(deal.expected_close_date || "");
+      setNotes(deal.notes || "");
+    }
+  }, [deal]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};

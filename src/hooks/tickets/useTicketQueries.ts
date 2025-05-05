@@ -18,7 +18,7 @@ export const useTicketQueries = (
         .from("support_tickets")
         .select(`
           *,
-          profiles!profiles(
+          profiles!support_tickets_user_id_fkey(
             full_name,
             email,
             whatsapp
@@ -59,7 +59,7 @@ export const useTicketQueries = (
         .from("support_tickets")
         .select(`
           *,
-          profiles!profiles(
+          profiles!support_tickets_user_id_fkey(
             full_name,
             email,
             whatsapp
@@ -75,7 +75,7 @@ export const useTicketQueries = (
         .from("ticket_responses")
         .select(`
           *,
-          profiles!profiles(
+          profiles!ticket_responses_user_id_fkey(
             full_name,
             email
           )

@@ -12,12 +12,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { AlertDialogTrigger } from "@radix-ui/react-alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { TicketsTable } from "./tickets/TicketsTable";
 import { Ticket } from "@/types/ticket";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 const AdminTicketsList = () => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -51,7 +51,7 @@ const AdminTicketsList = () => {
         .from("support_tickets")
         .select(`
           *,
-          profiles!profiles(
+          profiles!support_tickets_user_id_fkey(
             full_name,
             email,
             whatsapp
@@ -159,7 +159,12 @@ const AdminTicketsList = () => {
           onClick={() => fetchTickets()}
           disabled={refreshing}
         >
-          {refreshing ? "Atualizando..." : "Atualizar"}
+          {refreshing ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Atualizando...
+            </>
+          ) : "Atualizar"}
         </Button>
       </div>
       
