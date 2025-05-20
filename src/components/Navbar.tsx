@@ -67,6 +67,9 @@ const Navbar = () => {
           <Link to="/produtos/deliveryflow" className="text-sm font-medium transition-colors hover:text-ramel">
             DeliveryFlow
           </Link>
+          <Link to="/membro/arquivos" className="text-sm font-medium transition-colors hover:text-ramel">
+            Recursos e Suporte
+          </Link>
           <button 
             className="text-sm font-medium transition-colors hover:text-ramel"
             onClick={() => scrollToSection('contato')}
@@ -138,6 +141,13 @@ const Navbar = () => {
               onClick={() => setMenuOpen(false)}
             >
               DeliveryFlow
+            </Link>
+            <Link 
+              to="/membro/arquivos" 
+              className="px-3 py-2 rounded-md hover:bg-white/5"
+              onClick={() => setMenuOpen(false)}
+            >
+              Recursos e Suporte
             </Link>
             <button 
               className="px-3 py-2 text-left rounded-md hover:bg-white/5"
