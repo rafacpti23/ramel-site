@@ -73,7 +73,9 @@ const Index = () => {
         </div>
         
         <ServicesSection />
-        <ProductsSection deliveryLogoUrl="https://i.ibb.co/qgRmCS7/3.png" />
+        <ProductsSection 
+          deliveryLogoUrl="https://i.ibb.co/qgRmCS7/3.png" 
+        />
         <SecurityBadges />
         <PromotionSection />
         <ContactSection />
@@ -84,3 +86,4 @@ const Index = () => {
 };
 
 export default Index;
+

@@ -33,29 +33,42 @@ const ProductsSection = ({ deliveryLogoUrl }: { deliveryLogoUrl?: string }) => {
                   A partir de R$ 99/mês
                 </div>
                 
-                <div className="bg-secondary/80 rounded-lg p-6 shadow-lg mt-8">
-                  <ul className="space-y-3">
-                    <li className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-ramel mt-0.5" />
-                      <span>Multiatendimento integrado</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-ramel mt-0.5" />
-                      <span>Sistema de agendamento inteligente</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-ramel mt-0.5" />
-                      <span>Chatbot com IA para agendamentos automáticos</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-ramel mt-0.5" />
-                      <span>Lembretes automáticos para clientes</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-ramel mt-0.5" />
-                      <span>Dashboard com análises e relatórios</span>
-                    </li>
-                  </ul>
+                <div className="flex flex-col md:flex-row gap-6 bg-secondary/80 rounded-lg p-6 shadow-lg mt-8">
+                  <div className="md:w-1/3">
+                    <img 
+                      src="/images/ai-receptionist.png" 
+                      alt="Atendente IA" 
+                      className="rounded-lg w-full h-auto shadow-md"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80";
+                      }}
+                    />
+                  </div>
+                  <div className="md:w-2/3">
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-2">
+                        <Check className="h-5 w-5 text-ramel mt-0.5" />
+                        <span>Multiatendimento integrado</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="h-5 w-5 text-ramel mt-0.5" />
+                        <span>Sistema de agendamento inteligente</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="h-5 w-5 text-ramel mt-0.5" />
+                        <span>Chatbot com IA para agendamentos automáticos</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="h-5 w-5 text-ramel mt-0.5" />
+                        <span>Lembretes automáticos para clientes</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="h-5 w-5 text-ramel mt-0.5" />
+                        <span>Dashboard com análises e relatórios</span>
+                      </li>
+                    </ul>
+                  </div>
                 </div>
               </CardContent>
               
@@ -134,3 +147,4 @@ const ProductsSection = ({ deliveryLogoUrl }: { deliveryLogoUrl?: string }) => {
 };
 
 export default ProductsSection;
+
