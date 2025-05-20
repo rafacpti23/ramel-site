@@ -30,8 +30,8 @@ const MemberHeader = () => {
               <Link to="/membro" className="hover:text-ramel transition-colors">
                 Início
               </Link>
-              <Link to="/membro/afiliacao" className="hover:text-ramel transition-colors">
-                Afiliação
+              <Link to="/membro/arquivos" className="hover:text-ramel transition-colors">
+                Arquivos e Suporte
               </Link>
               <Link to="/membro/suporte" className="hover:text-ramel transition-colors">
                 Suporte
@@ -69,6 +69,15 @@ const MemberHeader = () => {
                       onClick={() => setOpen(false)}
                     >
                       <FileText className="h-5 w-5" />
+                      <span>Início</span>
+                    </Link>
+                    
+                    <Link 
+                      to="/membro/arquivos" 
+                      className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-md transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
+                      <FileText className="h-5 w-5" />
                       <span>Arquivos de Apoio</span>
                     </Link>
                     
@@ -79,15 +88,6 @@ const MemberHeader = () => {
                     >
                       <Video className="h-5 w-5" />
                       <span>Vídeo Aulas</span>
-                    </Link>
-                    
-                    <Link 
-                      to="/membro/afiliacao" 
-                      className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-md transition-colors"
-                      onClick={() => setOpen(false)}
-                    >
-                      <Award className="h-5 w-5" />
-                      <span>Programa de Afiliação</span>
                     </Link>
                     
                     <Link 

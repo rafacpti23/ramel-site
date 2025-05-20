@@ -2,7 +2,7 @@
 import MemberHeader from "@/components/MemberHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Users, MessageCircle, Download, HelpCircle, Award, Gift, TrendingUp } from "lucide-react";
+import { FileText, Video, MessageCircle, Download, HelpCircle, Book, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const AffiliationPage = () => {
@@ -15,44 +15,44 @@ const AffiliationPage = () => {
           {/* Banner Header */}
           <div className="relative overflow-hidden rounded-lg mb-10">
             <img 
-              src="https://images.unsplash.com/photo-1519389950473-47ba0277781c"
-              alt="Programa de Afiliação" 
+              src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+              alt="Área de Arquivos e Suporte" 
               className="w-full h-64 object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
               <div className="text-white">
-                <h1 className="text-3xl md:text-4xl font-bold">Programa de Afiliação</h1>
-                <p className="mt-2 text-lg">Crescimento e benefícios para nossos parceiros</p>
+                <h1 className="text-3xl md:text-4xl font-bold">Arquivos e Material de Apoio</h1>
+                <p className="mt-2 text-lg">Acesso exclusivo a todos os recursos para seu sucesso</p>
               </div>
             </div>
           </div>
           
-          {/* Sobre o Programa */}
+          {/* Sobre a Área */}
           <div className="mb-12">
             <div className="flex flex-col md:flex-row gap-8 items-center">
               <div className="md:w-2/3">
-                <h2 className="text-2xl font-bold mb-4">Sobre o Programa de Afiliação</h2>
+                <h2 className="text-2xl font-bold mb-4">Bem-vindo à Área de Membros</h2>
                 <p className="mb-4 text-lg">
-                  Nosso programa de afiliação foi desenvolvido para criar uma relação de crescimento mútuo. 
-                  Oferecemos as ferramentas necessárias para você expandir sua presença no mercado e gerar 
-                  receita adicional, enquanto ajuda mais clientes a conhecerem nossas soluções.
+                  Como membro, você tem acesso exclusivo a uma ampla gama de recursos projetados para maximizar 
+                  seu sucesso com nossos produtos e soluções. Aqui você encontrará tutoriais detalhados, 
+                  manuais técnicos, guias práticos e suporte especializado.
                 </p>
                 <p className="text-lg">
-                  Como afiliado, você se torna parte da família Ramel Tecnologia e tem acesso a benefícios exclusivos,
-                  comissões atrativas e todo o suporte necessário para o seu sucesso.
+                  Nossa equipe está constantemente atualizando esta biblioteca com novos conteúdos e 
+                  recursos para garantir que você sempre tenha as melhores ferramentas à sua disposição.
                 </p>
               </div>
               <div className="md:w-1/3">
                 <Card className="border-ramel/20">
                   <CardHeader className="bg-ramel text-white">
-                    <CardTitle>Comece a ganhar hoje!</CardTitle>
+                    <CardTitle>Precisa de ajuda?</CardTitle>
                     <CardDescription className="text-white/80">
-                      Torne-se um afiliado e comece a gerar renda recorrente
+                      Nossa equipe está pronta para auxiliar
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-6">
-                    <Link to="/membro/afiliacao/cadastro">
-                      <Button className="w-full bg-ramel hover:bg-ramel-dark">Quero ser Afiliado</Button>
+                    <Link to="/membro/suporte">
+                      <Button className="w-full bg-ramel hover:bg-ramel-dark">Abrir Ticket de Suporte</Button>
                     </Link>
                   </CardContent>
                 </Card>
@@ -75,96 +75,128 @@ const AffiliationPage = () => {
                   <h3 className="text-2xl font-bold mb-2">Rafael Martins</h3>
                   <p className="text-lg text-muted-foreground mb-4">CEO & Fundador da Ramel Tecnologia</p>
                   <blockquote className="border-l-4 border-ramel pl-4 italic">
-                    "Nosso programa de afiliação foi criado para construir parcerias fortes e duradouras. 
-                    Queremos que nossos afiliados cresçam junto conosco e se beneficiem do sucesso mútuo, 
-                    oferecendo as melhores soluções tecnológicas para o mercado."
+                    "Disponibilizamos esta área exclusiva para nossos membros porque acreditamos que seu sucesso 
+                    é o nosso sucesso. Todos os recursos que você encontra aqui foram cuidadosamente desenvolvidos 
+                    para garantir que você possa extrair o máximo valor de nossas soluções tecnológicas."
                   </blockquote>
                 </div>
               </div>
             </div>
           </div>
           
-          {/* Benefícios */}
+          {/* Categorias de Conteúdo */}
           <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-6 text-center">Benefícios do Programa</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">Recursos Disponíveis</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="border-ramel/20">
                 <CardHeader>
-                  <Award className="h-10 w-10 text-ramel mb-2" />
-                  <CardTitle>Comissões Atrativas</CardTitle>
+                  <Book className="h-10 w-10 text-ramel mb-2" />
+                  <CardTitle>Manuais Técnicos</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p>Ganhe até 30% de comissão recorrente por cada cliente indicado. Comissões mensais enquanto o cliente permanecer ativo.</p>
+                  <p>Documentação completa sobre cada recurso de nossos produtos, com guias detalhados e exemplos práticos.</p>
+                  <Link to="/membro/arquivos/manuais" className="text-ramel hover:underline mt-4 inline-block">
+                    Acessar manuais
+                  </Link>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-ramel/20">
+                <CardHeader>
+                  <Video className="h-10 w-10 text-ramel mb-2" />
+                  <CardTitle>Vídeo Tutoriais</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p>Tutoriais em vídeo que demonstram passo a passo como utilizar cada funcionalidade de nossos produtos.</p>
+                  <Link to="/membro/videos" className="text-ramel hover:underline mt-4 inline-block">
+                    Assistir vídeos
+                  </Link>
                 </CardContent>
               </Card>
               
               <Card className="border-ramel/20">
                 <CardHeader>
                   <FileText className="h-10 w-10 text-ramel mb-2" />
-                  <CardTitle>Materiais Exclusivos</CardTitle>
+                  <CardTitle>Modelos e Templates</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p>Acesso a materiais de marketing profissionais, banners, landing pages e textos prontos para suas campanhas.</p>
+                  <p>Arquivos prontos para uso, templates e modelos que ajudam a agilizar seu trabalho com nossas soluções.</p>
+                  <Link to="/membro/arquivos/templates" className="text-ramel hover:underline mt-4 inline-block">
+                    Baixar templates
+                  </Link>
                 </CardContent>
               </Card>
               
               <Card className="border-ramel/20">
                 <CardHeader>
-                  <TrendingUp className="h-10 w-10 text-ramel mb-2" />
-                  <CardTitle>Dashboard Detalhado</CardTitle>
+                  <BookOpen className="h-10 w-10 text-ramel mb-2" />
+                  <CardTitle>Guias de Boas Práticas</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p>Acompanhe suas indicações, conversões e comissões em tempo real através do seu painel exclusivo de afiliado.</p>
+                  <p>Recomendações e dicas de especialistas sobre como obter os melhores resultados com nossas soluções.</p>
+                  <Link to="/membro/arquivos/guias" className="text-ramel hover:underline mt-4 inline-block">
+                    Conferir guias
+                  </Link>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-ramel/20">
+                <CardHeader>
+                  <HelpCircle className="h-10 w-10 text-ramel mb-2" />
+                  <CardTitle>FAQ e Soluções</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p>Respostas para as perguntas mais frequentes e soluções para os problemas mais comuns encontrados.</p>
+                  <Link to="/membro/arquivos/faq" className="text-ramel hover:underline mt-4 inline-block">
+                    Consultar FAQ
+                  </Link>
                 </CardContent>
               </Card>
               
               <Card className="border-ramel/20">
                 <CardHeader>
                   <MessageCircle className="h-10 w-10 text-ramel mb-2" />
-                  <CardTitle>Suporte Prioritário</CardTitle>
+                  <CardTitle>Suporte Técnico</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p>Canal exclusivo de suporte para afiliados, com atendimento prioritário para dúvidas e orientações.</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-ramel/20">
-                <CardHeader>
-                  <Gift className="h-10 w-10 text-ramel mb-2" />
-                  <CardTitle>Bônus e Premiações</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p>Participe de campanhas especiais com bônus por performance e premiações exclusivas para os melhores afiliados.</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-ramel/20">
-                <CardHeader>
-                  <Users className="h-10 w-10 text-ramel mb-2" />
-                  <CardTitle>Comunidade de Afiliados</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p>Faça parte de uma comunidade exclusiva de afiliados para networking, troca de experiências e estratégias.</p>
+                  <p>Contato direto com nossa equipe técnica para resolver dúvidas específicas e problemas complexos.</p>
+                  <Link to="/membro/suporte" className="text-ramel hover:underline mt-4 inline-block">
+                    Contatar suporte
+                  </Link>
                 </CardContent>
               </Card>
             </div>
           </div>
           
-          {/* Recursos Disponíveis */}
+          {/* Últimas Atualizações */}
           <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-6">Recursos Disponíveis</h2>
+            <h2 className="text-2xl font-bold mb-6">Materiais Recentes</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex gap-4 items-start">
                 <Download className="h-8 w-8 text-ramel" />
                 <div>
-                  <h3 className="font-bold text-lg mb-2">Arquivos de Apoio</h3>
+                  <h3 className="font-bold text-lg mb-2">Manual DeliveryFlow 2.0</h3>
                   <p className="text-muted-foreground">
-                    Acesse materiais de marketing, guias de vendas, apresentações prontas e estudos de caso 
-                    que facilitarão suas conversões.
+                    Guia completo atualizado com todas as novas funcionalidades da versão 2.0, incluindo 
+                    integração com marketplaces e gerenciamento avançado de entregas.
                   </p>
-                  <Link to="/membro/arquivos" className="text-ramel hover:underline mt-2 inline-block">
-                    Acessar arquivos
+                  <Link to="/membro/arquivos/manual-delivery-flow" className="text-ramel hover:underline mt-2 inline-block">
+                    Baixar manual
+                  </Link>
+                </div>
+              </div>
+              
+              <div className="flex gap-4 items-start">
+                <Video className="h-8 w-8 text-ramel" />
+                <div>
+                  <h3 className="font-bold text-lg mb-2">Vídeo: Configuração do AgendaPro</h3>
+                  <p className="text-muted-foreground">
+                    Tutorial em vídeo mostrando o passo a passo para configurar o AgendaPro desde a 
+                    instalação inicial até a personalização avançada.
+                  </p>
+                  <Link to="/membro/videos/config-agendapro" className="text-ramel hover:underline mt-2 inline-block">
+                    Assistir vídeo
                   </Link>
                 </div>
               </div>
@@ -172,13 +204,13 @@ const AffiliationPage = () => {
               <div className="flex gap-4 items-start">
                 <FileText className="h-8 w-8 text-ramel" />
                 <div>
-                  <h3 className="font-bold text-lg mb-2">Tutoriais e Vídeo-aulas</h3>
+                  <h3 className="font-bold text-lg mb-2">Template: Relatórios Mensais</h3>
                   <p className="text-muted-foreground">
-                    Assista tutoriais completos sobre nossos produtos, demonstrações e estratégias de vendas 
-                    para maximizar seus resultados.
+                    Modelo de relatório personalizado para acompanhamento mensal de desempenho, 
+                    pronto para ser importado em qualquer um de nossos softwares.
                   </p>
-                  <Link to="/membro/videos" className="text-ramel hover:underline mt-2 inline-block">
-                    Acessar vídeos
+                  <Link to="/membro/arquivos/template-relatorios" className="text-ramel hover:underline mt-2 inline-block">
+                    Baixar template
                   </Link>
                 </div>
               </div>
@@ -186,27 +218,13 @@ const AffiliationPage = () => {
               <div className="flex gap-4 items-start">
                 <HelpCircle className="h-8 w-8 text-ramel" />
                 <div>
-                  <h3 className="font-bold text-lg mb-2">Suporte Dedicado</h3>
+                  <h3 className="font-bold text-lg mb-2">Guia de Solução de Problemas</h3>
                   <p className="text-muted-foreground">
-                    Conte com nossa equipe de suporte especializada para esclarecer dúvidas técnicas sobre
-                    produtos ou sobre o programa de afiliação.
+                    Documento com fluxogramas de diagnóstico e soluções para os problemas mais comuns 
+                    reportados por usuários em todos os nossos produtos.
                   </p>
-                  <Link to="/membro/suporte" className="text-ramel hover:underline mt-2 inline-block">
-                    Abrir ticket de suporte
-                  </Link>
-                </div>
-              </div>
-              
-              <div className="flex gap-4 items-start">
-                <Award className="h-8 w-8 text-ramel" />
-                <div>
-                  <h3 className="font-bold text-lg mb-2">Links de Afiliação</h3>
-                  <p className="text-muted-foreground">
-                    Gere links personalizados para cada produto, acompanhe cliques e conversões
-                    com rastreamento preciso de todas as suas indicações.
-                  </p>
-                  <Link to="/membro/afiliacao/links" className="text-ramel hover:underline mt-2 inline-block">
-                    Gerenciar links
+                  <Link to="/membro/arquivos/guia-solucoes" className="text-ramel hover:underline mt-2 inline-block">
+                    Acessar guia
                   </Link>
                 </div>
               </div>
@@ -215,14 +233,14 @@ const AffiliationPage = () => {
           
           {/* CTA Final */}
           <div className="bg-gradient-to-r from-ramel-dark to-ramel text-white rounded-lg p-8 text-center">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">Torne-se um Afiliado de Sucesso</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">Não Encontrou o que Procura?</h2>
             <p className="text-lg mb-6 max-w-2xl mx-auto">
-              Junte-se ao programa de afiliados da Ramel Tecnologia hoje mesmo e comece a construir 
-              uma fonte de renda recorrente enquanto ajuda seus contatos com soluções tecnológicas de ponta.
+              Nossa equipe de suporte está pronta para auxiliá-lo com qualquer dúvida ou necessidade específica.
+              Abra um ticket de suporte e receba atendimento personalizado.
             </p>
-            <Link to="/membro/afiliacao/cadastro">
+            <Link to="/membro/suporte">
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-ramel">
-                Começar Agora
+                Contatar Suporte Técnico
               </Button>
             </Link>
           </div>
