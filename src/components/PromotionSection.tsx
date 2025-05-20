@@ -8,9 +8,9 @@ const PromotionSection = () => {
   const { webhookContactForm } = useSystemConfig();
 
   const vpsFeatures = [
-    { text: "4 vCPU Cores" },
-    { text: "4GB RAM" },
-    { text: "100GB NVMe ou 200GB SSD" },
+    { text: "3 vCPU Cores" },
+    { text: "8GB RAM" },
+    { text: "75GB NVMe ou 150GB SSD" },
     { text: "1 Snapshot" },
     { text: "32TB Tráfego*" },
     { text: "Entrada Ilimitada" }
@@ -48,7 +48,7 @@ const PromotionSection = () => {
           <div className="grid md:grid-cols-3 gap-8">
             <PromoCard
               icon={Server}
-              title="VPS Premium"
+              title="VPS PREMIUM 10"
               price="R$ 29,10"
               period="/mês"
               features={vpsFeatures}
