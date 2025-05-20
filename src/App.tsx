@@ -20,6 +20,7 @@ import CrmPage from "@/pages/CrmPage";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LiveChatService } from "@/services/LiveChatService";
+import AffiliationPage from "@/pages/AffiliationPage";
 
 function App() {
   // Carrega as configurações do sistema e inicializa o chat ao carregar a aplicação
@@ -60,6 +61,7 @@ function App() {
           <Route path="/produtos/agenda-pro-plus" element={<AgendaProPlus />} />
           <Route path="/produtos/agendapro" element={<AgendaPro />} />
           <Route path="/membro" element={<MemberArea />} />
+          <Route path="/membro/afiliacao" element={<AffiliationPage />} />
           <Route path="/membro/admin/arquivos" element={<FileManagement />} />
           <Route path="/membro/admin/videos" element={<VideoManagement />} />
           <Route path="/membro/suporte" element={<SupportPage />} />

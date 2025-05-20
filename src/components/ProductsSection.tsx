@@ -36,7 +36,7 @@ const ProductsSection = ({ deliveryLogoUrl }: { deliveryLogoUrl?: string }) => {
                 <div className="flex flex-col md:flex-row gap-6 bg-secondary/80 rounded-lg p-6 shadow-lg mt-8">
                   <div className="md:w-1/3">
                     <img 
-                      src="/images/ai-receptionist.png" 
+                      src="https://acaert.com.br/storage/files/editor/67bf2d1fc827c.jpeg" 
                       alt="Atendente IA" 
                       className="rounded-lg w-full h-auto shadow-md"
                       onError={(e) => {
@@ -147,4 +147,3 @@ const ProductsSection = ({ deliveryLogoUrl }: { deliveryLogoUrl?: string }) => {
 };
 
 export default ProductsSection;
-
