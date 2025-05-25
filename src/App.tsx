@@ -14,6 +14,7 @@ import SystemConfigPage from "@/pages/SystemConfigPage";
 import DeliveryFlow from "@/pages/DeliveryFlow";
 import AgendaPro from "@/pages/AgendaPro";
 import AgendaProPlus from "@/pages/AgendaProPlus";
+import AgendamentoPage from "@/pages/AgendamentoPage";
 import { Toaster } from "@/components/ui/toaster"
 import WaitingApproval from "@/pages/WaitingApproval";
 import CrmPage from "@/pages/CrmPage";
@@ -56,6 +57,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/agendamento" element={<AgendamentoPage />} />
           <Route path="/aguardando-aprovacao" element={<WaitingApproval />} />
           <Route path="/produtos/deliveryflow" element={<DeliveryFlow />} />
           <Route path="/produtos/agenda-pro-plus" element={<AgendaProPlus />} />

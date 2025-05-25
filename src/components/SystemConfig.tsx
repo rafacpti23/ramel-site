@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSystemConfig } from "@/hooks/useSystemConfig";
 import WebhooksTab from "@/components/system-config/WebhooksTab";
 import LiveChatTab from "@/components/system-config/LiveChatTab";
+import CalComTab from "@/components/system-config/CalComTab";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 
@@ -23,6 +24,8 @@ const SystemConfig = () => {
     setLiveChatEnabled,
     chatButtonText,
     setChatButtonText,
+    calApiKey,
+    setCalApiKey,
     saveConfig
   } = useSystemConfig();
   
@@ -81,6 +84,7 @@ const SystemConfig = () => {
           <TabsList className="mb-6">
             <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
             <TabsTrigger value="chat">Chat ao Vivo</TabsTrigger>
+            <TabsTrigger value="calcom">Cal.com</TabsTrigger>
           </TabsList>
           
           <TabsContent value="webhooks">
@@ -95,6 +99,13 @@ const SystemConfig = () => {
               setChatButtonText={setChatButtonText}
               liveChatCode={liveChatCode}
               setLiveChatCode={setLiveChatCode}
+            />
+          </TabsContent>
+          
+          <TabsContent value="calcom">
+            <CalComTab 
+              calApiKey={calApiKey}
+              setCalApiKey={setCalApiKey}
             />
           </TabsContent>
         </Tabs>

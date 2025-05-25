@@ -14,6 +14,7 @@ export interface SystemConfigData {
   updated_by: string | null;
   live_chat_enabled: boolean;
   chat_button_text: string;
+  cal_api_key: string | null;
   contactFormWebhookUrl?: string;
   ticketCloseWebhookUrl?: string;
 }
@@ -37,6 +38,7 @@ export const useSystemConfig = () => {
   const [liveChatCode, setLiveChatCode] = useState("");
   const [liveChatEnabled, setLiveChatEnabled] = useState(true);
   const [chatButtonText, setChatButtonText] = useState("Estamos aqui!");
+  const [calApiKey, setCalApiKey] = useState("");
   const [config, setConfig] = useState<SystemConfigData | null>(null);
   
   const fetchConfig = async () => {
@@ -53,6 +55,7 @@ export const useSystemConfig = () => {
         setWebhookContactForm(data.webhook_contact_form || "");
         setWebhookTicketResponse(data.webhook_ticket_response || "");
         setLiveChatCode(data.live_chat_code || "");
+        setCalApiKey(data.cal_api_key || "");
         
         // For the properties not in the type definition, use type assertion with fallbacks
         setLiveChatEnabled(
@@ -126,6 +129,7 @@ export const useSystemConfig = () => {
             webhook_contact_form: webhookContactForm,
             webhook_ticket_response: webhookTicketResponse,
             live_chat_code: liveChatCode,
+            cal_api_key: calApiKey,
             // Add these fields with our local variables
             live_chat_enabled: liveChatEnabled,
             chat_button_text: chatButtonText,
@@ -140,6 +144,7 @@ export const useSystemConfig = () => {
             webhook_contact_form: webhookContactForm,
             webhook_ticket_response: webhookTicketResponse,
             live_chat_code: liveChatCode,
+            cal_api_key: calApiKey,
             // Add these fields with our local variables
             live_chat_enabled: liveChatEnabled,
             chat_button_text: chatButtonText,
@@ -155,6 +160,7 @@ export const useSystemConfig = () => {
         webhook_contact_form: webhookContactForm,
         webhook_ticket_response: webhookTicketResponse,
         live_chat_code: liveChatCode,
+        cal_api_key: calApiKey,
         live_chat_enabled: liveChatEnabled,
         chat_button_text: chatButtonText,
         contactFormWebhookUrl: webhookContactForm,
@@ -220,6 +226,8 @@ export const useSystemConfig = () => {
     setLiveChatEnabled,
     chatButtonText,
     setChatButtonText,
+    calApiKey,
+    setCalApiKey,
     saveConfig,
     config,
     updateConfig

@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Calendar } from "lucide-react";
 
 const HeroSection = () => {
   const [scroll, setScroll] = useState(false);
@@ -65,8 +67,15 @@ const HeroSection = () => {
             
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" asChild>
-                <Link to="/agenda-pro-plus" className="px-8">
+                <Link to="/produtos/agenda-pro-plus" className="px-8">
                   Agenda Pro+
+                </Link>
+              </Button>
+              
+              <Button variant="outline" size="lg" asChild>
+                <Link to="/agendamento" className="px-8">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Agendar Horário
                 </Link>
               </Button>
               

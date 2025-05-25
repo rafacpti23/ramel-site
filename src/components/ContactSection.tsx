@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, Send } from 'lucide-react';
+import { Loader2, Send, Calendar } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 const ContactSection = () => {
   const [name, setName] = useState('');
@@ -191,6 +192,20 @@ const ContactSection = () => {
                   <p>Segunda a Sexta: 08:00 - 18:00</p>
                 </div>
               </div>
+            </div>
+
+            <div className="glass-card p-6 rounded-lg">
+              <h3 className="text-xl font-semibold mb-4">Agende uma Reunião</h3>
+              <p className="mb-4">
+                Prefere uma conversa mais detalhada? Agende um horário personalizado 
+                com nosso especialista.
+              </p>
+              <Button asChild className="w-full">
+                <Link to="/agendamento">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Agendar Horário
+                </Link>
+              </Button>
             </div>
             
             <div className="glass-card p-6 rounded-lg">
