@@ -334,6 +334,7 @@ export type Database = {
       }
       system_config: {
         Row: {
+          cal_api_key: string | null
           chat_button_text: string | null
           id: string
           live_chat_code: string | null
@@ -344,6 +345,7 @@ export type Database = {
           webhook_ticket_response: string | null
         }
         Insert: {
+          cal_api_key?: string | null
           chat_button_text?: string | null
           id?: string
           live_chat_code?: string | null
@@ -354,6 +356,7 @@ export type Database = {
           webhook_ticket_response?: string | null
         }
         Update: {
+          cal_api_key?: string | null
           chat_button_text?: string | null
           id?: string
           live_chat_code?: string | null
