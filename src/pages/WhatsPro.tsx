@@ -79,9 +79,15 @@ const WhatsPro = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-green-600 hover:bg-green-700 px-8">
-                  <MessageSquare className="mr-2 h-5 w-5" />
-                  Começar Agora
+                <Button size="lg" className="bg-green-600 hover:bg-green-700 px-8" asChild>
+                  <a 
+                    href="https://whatspro.ramelseg.com.br" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    <MessageSquare className="mr-2 h-5 w-5" />
+                    Começar Agora
+                  </a>
                 </Button>
                 <Button variant="outline" size="lg" asChild>
                   <Link to="/agendamento" className="px-8">
@@ -108,8 +114,72 @@ const WhatsPro = () => {
           </div>
         </section>
 
-        {/* Features Section */}
+        {/* Screenshots Section */}
         <section className="py-20">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Veja o Sistema em Ação
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Interface intuitiva e poderosa para gerenciar todas suas campanhas de WhatsApp
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+              <Card className="overflow-hidden">
+                <CardHeader>
+                  <CardTitle className="text-xl text-green-600">Dashboard Completo</CardTitle>
+                  <CardDescription>
+                    Acompanhe todas suas métricas em tempo real com nosso dashboard intuitivo
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <img 
+                    src="/lovable-uploads/63de2175-e9e7-4ce5-83cc-5817019ce129.png" 
+                    alt="Dashboard WhatsPro - Visão geral completa com métricas de campanhas"
+                    className="w-full h-auto border-t"
+                  />
+                </CardContent>
+              </Card>
+
+              <Card className="overflow-hidden">
+                <CardHeader>
+                  <CardTitle className="text-xl text-green-600">Criação de Campanhas</CardTitle>
+                  <CardDescription>
+                    Interface simples para criar campanhas personalizadas com agendamento automático
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <img 
+                    src="/lovable-uploads/88c54bb1-be6f-4f5b-a5a9-ff1b1c58ef64.png" 
+                    alt="Tela de criação de campanhas do WhatsPro com opções de agendamento"
+                    className="w-full h-auto border-t"
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="overflow-hidden max-w-4xl mx-auto">
+              <CardHeader>
+                <CardTitle className="text-xl text-green-600">Planos Flexíveis</CardTitle>
+                <CardDescription>
+                  Escolha o plano ideal para seu negócio, desde teste gratuito até soluções empresariais
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                <img 
+                  src="/lovable-uploads/57413353-e0cf-4487-a8f8-5af0e9765eae.png" 
+                  alt="Planos do WhatsPro - Teste Gratuito, Starter e Master com preços e recursos"
+                  className="w-full h-auto border-t"
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="py-20 bg-secondary/30">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -141,7 +211,7 @@ const WhatsPro = () => {
         </section>
 
         {/* All-in-One Section */}
-        <section className="py-20 bg-secondary/30">
+        <section className="py-20">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-12">
@@ -175,9 +245,15 @@ const WhatsPro = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" variant="outline" className="border-white text-green-600 hover:bg-white hover:text-green-700 px-8">
-                <Zap className="mr-2 h-5 w-5" />
-                Começar Gratuitamente
+              <Button size="lg" variant="outline" className="border-white text-green-600 hover:bg-white hover:text-green-700 px-8" asChild>
+                <a 
+                  href="https://whatspro.ramelseg.com.br" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  <Zap className="mr-2 h-5 w-5" />
+                  Começar Gratuitamente
+                </a>
               </Button>
               <Button variant="outline" size="lg" asChild className="border-white text-white hover:bg-white hover:text-green-600">
                 <a 
@@ -189,6 +265,15 @@ const WhatsPro = () => {
                   <MessageSquare className="mr-2 h-4 w-4" />
                   Fale Conosco
                 </a>
+              </Button>
+            </div>
+            
+            <div className="mt-6">
+              <Button variant="outline" size="lg" asChild className="border-white text-white hover:bg-white hover:text-green-600">
+                <Link to="/agendamento" className="px-8">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Agendar Reunião
+                </Link>
               </Button>
             </div>
           </div>
