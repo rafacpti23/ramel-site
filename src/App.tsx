@@ -15,6 +15,7 @@ import DeliveryFlow from "@/pages/DeliveryFlow";
 import AgendaPro from "@/pages/AgendaPro";
 import AgendaProPlus from "@/pages/AgendaProPlus";
 import AgendamentoPage from "@/pages/AgendamentoPage";
+import WhatsPro from "@/pages/WhatsPro";
 import { Toaster } from "@/components/ui/toaster"
 import WaitingApproval from "@/pages/WaitingApproval";
 import CrmPage from "@/pages/CrmPage";
@@ -62,6 +63,7 @@ function App() {
           <Route path="/produtos/deliveryflow" element={<DeliveryFlow />} />
           <Route path="/produtos/agenda-pro-plus" element={<AgendaProPlus />} />
           <Route path="/produtos/agendapro" element={<AgendaPro />} />
+          <Route path="/produtos/whatspro" element={<WhatsPro />} />
           <Route path="/membro" element={<MemberArea />} />
           <Route path="/membro/arquivos" element={<AffiliationPage />} />
           <Route path="/membro/admin/arquivos" element={<FileManagement />} />
