@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +20,8 @@ interface SupportFile {
   category_id: string;
   created_at: string;
   file_type: string;
+  category: string;
+  category_image?: string | null;
   categories?: {
     name: string;
     image_url: string | null;
@@ -33,6 +34,7 @@ interface VideoLesson {
   description: string | null;
   video_url: string;
   category_id: string;
+  category: string;
   thumbnail_url?: string;
   categories?: {
     name: string;
