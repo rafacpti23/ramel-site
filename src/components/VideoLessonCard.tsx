@@ -15,12 +15,26 @@ interface VideoCardProps {
 }
 
 const VideoLessonCard = ({ video }: VideoCardProps) => {
+  // Função para extrair thumbnail do YouTube
+  const getYouTubeThumbnail = (url: string) => {
+    const videoId = extractVideoId(url);
+    if (videoId) {
+      return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+    }
+    return video.thumbnail_url || '/placeholder.svg';
+  };
+
+  // Função para extrair ID do vídeo do YouTube
+  const extractVideoId = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
   // Determinando a cor com base na categoria
   const getVideoColor = () => {
-    // Converte para minúsculas para comparação
     const category = video.category?.toLowerCase() || '';
     
-    // CRMs - tons de azul
     if (category.includes('crm')) {
       return {
         gradientColor: "from-blue-600/20 to-blue-700/30",
@@ -28,7 +42,6 @@ const VideoLessonCard = ({ video }: VideoCardProps) => {
         overlayColor: "bg-blue-900/50"
       };
     } 
-    // Tutoriais - tons de amarelo/âmbar
     else if (category.includes('tutorial')) {
       return {
         gradientColor: "from-amber-600/20 to-amber-700/30",
@@ -36,7 +49,6 @@ const VideoLessonCard = ({ video }: VideoCardProps) => {
         overlayColor: "bg-amber-900/50"
       };
     }
-    // Marketing - tons de roxo
     else if (category.includes('marketing')) {
       return {
         gradientColor: "from-purple-600/20 to-purple-700/30",
@@ -44,7 +56,6 @@ const VideoLessonCard = ({ video }: VideoCardProps) => {
         overlayColor: "bg-purple-900/50"
       };
     }
-    // Treinamentos - tons de verde
     else if (category.includes('treinamento')) {
       return {
         gradientColor: "from-green-600/20 to-green-700/30",
@@ -52,7 +63,6 @@ const VideoLessonCard = ({ video }: VideoCardProps) => {
         overlayColor: "bg-green-900/50"
       };
     }
-    // Webinars - tons de laranja
     else if (category.includes('webinar')) {
       return {
         gradientColor: "from-orange-600/20 to-orange-700/30",
@@ -60,7 +70,6 @@ const VideoLessonCard = ({ video }: VideoCardProps) => {
         overlayColor: "bg-orange-900/50"
       };
     }
-    // Padrão - cor da marca Ramel
     else {
       return {
         gradientColor: "from-ramel/20 to-ramel-dark/30",
@@ -90,7 +99,7 @@ const VideoLessonCard = ({ video }: VideoCardProps) => {
         >
           <div className="relative aspect-video overflow-hidden">
             <img 
-              src={video.thumbnail_url || '/placeholder.svg'} 
+              src={getYouTubeThumbnail(video.video_url)} 
               alt={video.title}
               className="w-full h-full object-cover transition-transform group-hover:scale-105"
               onError={(e) => {

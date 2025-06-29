@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -168,7 +169,7 @@ const MemberArea = () => {
           </Card>
 
           <Card className="glass-card hover:shadow-lg transition-all duration-300 cursor-pointer group"
-                onClick={() => navigate("/membro/crm")}>
+                onClick={() => navigate("/membro/admin/crm")}>
             <CardHeader className="text-center">
               <div className="mx-auto w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mb-2 group-hover:bg-green-500/30 transition-colors">
                 <Users className="h-6 w-6 text-green-500" />
@@ -183,7 +184,7 @@ const MemberArea = () => {
           </Card>
 
           <Card className="glass-card hover:shadow-lg transition-all duration-300 cursor-pointer group"
-                onClick={() => navigate("/whatspro")}>
+                onClick={() => navigate("/produtos/whatspro")}>
             <CardHeader className="text-center">
               <div className="mx-auto w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mb-2 group-hover:bg-purple-500/30 transition-colors">
                 <FileText className="h-6 w-6 text-purple-500" />
@@ -228,7 +229,7 @@ const MemberArea = () => {
           <div className="mb-12">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold">Vídeo Aulas</h2>
-              <Button variant="outline" onClick={() => navigate("/membro/videos")}>
+              <Button variant="outline" onClick={() => navigate("/membro/admin/videos")}>
                 Ver Todos
               </Button>
             </div>

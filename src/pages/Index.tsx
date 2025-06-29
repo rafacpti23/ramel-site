@@ -8,6 +8,7 @@ import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
 import SecurityBadges from "@/components/SecurityBadges";
 import ProductBanner from "@/components/ProductBanner";
+import ClientsSlider from "@/components/ClientsSlider";
 
 const Index = () => {
   return (
@@ -31,6 +32,10 @@ const Index = () => {
         />
         <SecurityBadges />
         <PromotionSection />
+        
+        {/* Client Logos Slider - Before Contact Section */}
+        <ClientsSlider />
+        
         <ContactSection />
       </main>
       <Footer />

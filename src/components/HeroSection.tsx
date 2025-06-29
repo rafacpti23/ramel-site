@@ -72,7 +72,7 @@ const HeroSection = () => {
                 </Link>
               </Button>
               
-              <Button variant="outline" size="lg" asChild>
+              <Button variant="outline" size="lg" asChild className="animate-pulse hover:animate-none">
                 <Link to="/agendamento" className="px-8">
                   <Calendar className="mr-2 h-4 w-4" />
                   Agendar Horário
@@ -101,7 +101,7 @@ const HeroSection = () => {
                 ))}
               </div>
               <div>
-                <div className="font-bold">+200 clientes</div>
+                <div className="font-bold">+100 clientes</div>
                 <div className="text-sm text-muted-foreground">confiam em nossas soluções</div>
               </div>
             </div>

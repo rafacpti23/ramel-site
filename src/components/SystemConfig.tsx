@@ -7,6 +7,7 @@ import { useSystemConfig } from "@/hooks/useSystemConfig";
 import WebhooksTab from "@/components/system-config/WebhooksTab";
 import LiveChatTab from "@/components/system-config/LiveChatTab";
 import CalComTab from "@/components/system-config/CalComTab";
+import ClientLogosManagement from "@/components/admin/ClientLogosManagement";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 
@@ -85,6 +86,7 @@ const SystemConfig = () => {
             <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
             <TabsTrigger value="chat">Chat ao Vivo</TabsTrigger>
             <TabsTrigger value="calcom">Cal.com</TabsTrigger>
+            <TabsTrigger value="clients">Logos Clientes</TabsTrigger>
           </TabsList>
           
           <TabsContent value="webhooks">
@@ -107,6 +109,10 @@ const SystemConfig = () => {
               calApiKey={calApiKey}
               setCalApiKey={setCalApiKey}
             />
+          </TabsContent>
+
+          <TabsContent value="clients">
+            <ClientLogosManagement />
           </TabsContent>
         </Tabs>
         

@@ -1,3 +1,4 @@
+
 /**
  * Service responsible for managing live chat functionality
  */
@@ -53,6 +54,14 @@ export class LiveChatService {
         // Otherwise, use the default Tawk.to configuration
         tawkScript.innerHTML = `
           var Tawk_API=Tawk_API||{};
+          Tawk_API.onLoad = function(){
+            // Move chat widget to the left side
+            var chatWidget = document.querySelector('#tawkchat-chat-widget');
+            if (chatWidget) {
+              chatWidget.style.right = 'auto';
+              chatWidget.style.left = '20px';
+            }
+          };
           Tawk_API.customStyle = {
             zIndex: 1000,
             visibility: {
