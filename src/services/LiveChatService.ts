@@ -53,10 +53,10 @@ export class LiveChatService {
       } else {
         // Otherwise, use the default Tawk.to configuration
         tawkScript.innerHTML = `
-          var Tawk_API=Tawk_API||{};
+          var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
           Tawk_API.onLoad = function(){
             // Move chat widget to the left side
-            var chatWidget = document.querySelector('#tawkchat-chat-widget');
+            var chatWidget = document.querySelector('.tawk-chat-widget-container');
             if (chatWidget) {
               chatWidget.style.right = 'auto';
               chatWidget.style.left = '20px';
@@ -66,16 +66,21 @@ export class LiveChatService {
             zIndex: 1000,
             visibility: {
               desktop: {
+                position: 'bl', // bottom-left
+                xOffset: 20,
+                yOffset: 20,
                 bubble: true,
                 text: "${chatButtonText || 'Estamos aqui!'}"
               },
               mobile: {
+                position: 'bl', // bottom-left
+                xOffset: 20,
+                yOffset: 20,
                 bubble: true,
                 text: "${chatButtonText || 'Estamos aqui!'}"
               }
             }
           };
-          Tawk_LoadStart=new Date();
           (function(){
             var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
             s1.async=true;

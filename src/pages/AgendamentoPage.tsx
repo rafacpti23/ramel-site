@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, User, CheckCircle, Star } from "lucide-react";
+import { Calendar, Clock, User, CheckCircle, Star, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const AgendamentoPage = () => {
@@ -87,18 +87,37 @@ const AgendamentoPage = () => {
                     ) : (
                       <div className="text-center py-12">
                         <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                        <p className="text-muted-foreground mb-4">
+                        <p className="text-muted-foreground mb-6">
                           Sistema de agendamento em configuração
                         </p>
-                        <Button asChild variant="outline">
-                          <a 
-                            href="https://wa.me/5527999082624?text=Olá,%20gostaria%20de%20agendar%20uma%20conversa" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                          >
-                            Agendar via WhatsApp
-                          </a>
-                        </Button>
+                        <div className="space-y-4">
+                          <Button asChild size="lg" className="w-full">
+                            <a 
+                              href="https://cal.com/rafa-martins/consultoria" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="flex items-center justify-center gap-2"
+                            >
+                              <Video className="h-5 w-5" />
+                              Agendar Reunião Online
+                            </a>
+                          </Button>
+                          <Button asChild variant="outline" size="lg" className="w-full">
+                            <a 
+                              href="https://wa.me/5527999082624?text=Olá,%20gostaria%20de%20agendar%20uma%20conversa" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="flex items-center justify-center gap-2"
+                            >
+                              <span className="text-green-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+                                </svg>
+                              </span>
+                              Agendar via WhatsApp
+                            </a>
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </CardContent>
@@ -181,7 +200,7 @@ const AgendamentoPage = () => {
                       </p>
                       <div className="grid grid-cols-2 gap-4 text-center">
                         <div>
-                          <div className="text-2xl font-bold text-ramel">200+</div>
+                          <div className="text-2xl font-bold text-ramel">100+</div>
                           <div className="text-sm text-muted-foreground">Clientes Atendidos</div>
                         </div>
                         <div>
