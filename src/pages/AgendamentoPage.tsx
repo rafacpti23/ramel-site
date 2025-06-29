@@ -74,7 +74,7 @@ const AgendamentoPage = () => {
                   <CardContent>
                     {calApiKey ? (
                       <div 
-                        data-cal-link="rafa-martins/consultoria"
+                        data-cal-link="rafa-martins/site"
                         data-cal-config='{"layout":"month_view"}'
                         className="min-h-[600px] bg-white rounded-lg"
                       >
@@ -93,7 +93,7 @@ const AgendamentoPage = () => {
                         <div className="space-y-4">
                           <Button asChild size="lg" className="w-full">
                             <a 
-                              href="https://cal.com/rafa-martins/consultoria" 
+                              href="https://cal.com/rafa-martins/site" 
                               target="_blank" 
                               rel="noopener noreferrer"
                               className="flex items-center justify-center gap-2"

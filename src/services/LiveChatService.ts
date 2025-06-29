@@ -32,6 +32,12 @@ export class LiveChatService {
       existingScript.remove();
     }
 
+    // Remove any existing chat widget
+    const existingWidget = document.querySelector('.tawk-chat-widget-container');
+    if (existingWidget) {
+      existingWidget.remove();
+    }
+
     // If chat is disabled, simply return - don't add any script
     if (!liveChatEnabled) return;
     
@@ -54,33 +60,40 @@ export class LiveChatService {
         // Otherwise, use the default Tawk.to configuration
         tawkScript.innerHTML = `
           var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+          
           Tawk_API.onLoad = function(){
-            // Move chat widget to the left side
+            console.log('Tawk chat loaded');
+            // Força o posicionamento do widget no lado esquerdo
             var chatWidget = document.querySelector('.tawk-chat-widget-container');
             if (chatWidget) {
-              chatWidget.style.right = 'auto';
               chatWidget.style.left = '20px';
+              chatWidget.style.right = 'auto';
+            }
+            
+            // Também força o posicionamento do minimized widget
+            var minimizedWidget = document.querySelector('.tawk-minimized-widget');
+            if (minimizedWidget) {
+              minimizedWidget.style.left = '20px';
+              minimizedWidget.style.right = 'auto';
             }
           };
+          
           Tawk_API.customStyle = {
             zIndex: 1000,
             visibility: {
               desktop: {
-                position: 'bl', // bottom-left
+                position: 'bl',
                 xOffset: 20,
-                yOffset: 20,
-                bubble: true,
-                text: "${chatButtonText || 'Estamos aqui!'}"
+                yOffset: 20
               },
               mobile: {
-                position: 'bl', // bottom-left
+                position: 'bl',
                 xOffset: 20,
-                yOffset: 20,
-                bubble: true,
-                text: "${chatButtonText || 'Estamos aqui!'}"
+                yOffset: 20
               }
             }
           };
+          
           (function(){
             var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
             s1.async=true;
@@ -94,6 +107,18 @@ export class LiveChatService {
       
       // Add the script to the document body
       document.body.appendChild(tawkScript);
+      
+      // Adicionar estilos CSS para forçar posicionamento à esquerda
+      const style = document.createElement('style');
+      style.textContent = `
+        .tawk-chat-widget-container,
+        .tawk-minimized-widget {
+          left: 20px !important;
+          right: auto !important;
+        }
+      `;
+      document.head.appendChild(style);
+      
     } catch (error) {
       console.error("Erro ao adicionar script do chat:", error);
     }
