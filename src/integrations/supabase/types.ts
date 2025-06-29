@@ -33,6 +33,27 @@ export type Database = {
         }
         Relationships: []
       }
+      client_logos: {
+        Row: {
+          created_at: string
+          id: string
+          logo_url: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          logo_url: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          logo_url?: string
+          name?: string
+        }
+        Relationships: []
+      }
       crm_customers: {
         Row: {
           address: string | null
