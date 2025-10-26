@@ -13,6 +13,7 @@ import CategoryManagement from "@/components/admin/CategoryManagement";
 import ContentManagement from "@/components/admin/ContentManagement";
 import AdminTicketsList from "@/components/admin/AdminTicketsList";
 import SystemConfigLink from "@/components/admin/SystemConfigLink";
+import CameraManagement from "@/components/admin/CameraManagement";
 import { UserProfile } from "@/context/AuthTypes";
 
 const AdminPage = () => {
@@ -97,6 +98,7 @@ const AdminPage = () => {
             <TabsTrigger value="categories">Categorias</TabsTrigger>
             <TabsTrigger value="content">Conteúdo</TabsTrigger>
             <TabsTrigger value="tickets">Tickets de Suporte</TabsTrigger>
+            <TabsTrigger value="cameras">Câmeras</TabsTrigger>
             <TabsTrigger value="configs">Configurações</TabsTrigger>
           </TabsList>
           
@@ -118,6 +120,10 @@ const AdminPage = () => {
                 <AdminTicketsList />
               </CardContent>
             </Card>
+          </TabsContent>
+          
+          <TabsContent value="cameras">
+            <CameraManagement />
           </TabsContent>
           
           <TabsContent value="configs">

@@ -19,6 +19,7 @@ import WhatsPro from "@/pages/WhatsPro";
 import { Toaster } from "@/components/ui/toaster"
 import WaitingApproval from "@/pages/WaitingApproval";
 import CrmPage from "@/pages/CrmPage";
+import MonitorCam from "@/pages/MonitorCam";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LiveChatService } from "@/services/LiveChatService";
@@ -73,6 +74,7 @@ function App() {
           <Route path="/membro/admin" element={<AdminPage />} />
           <Route path="/membro/admin/configuracoes" element={<SystemConfigPage />} />
           <Route path="/membro/admin/crm" element={<CrmPage />} />
+          <Route path="/membro/monitorcam" element={<MonitorCam />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />

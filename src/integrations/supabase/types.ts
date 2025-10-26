@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -57,6 +57,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      cameras: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          location: string | null
+          name: string
+          rtsp_url: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          name: string
+          rtsp_url: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          name?: string
+          rtsp_url?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       categories: {
         Row: {
@@ -593,6 +626,35 @@ export type Database = {
           },
         ]
       }
+      user_cameras: {
+        Row: {
+          camera_id: string
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          camera_id: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          camera_id?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_cameras_camera_id_fkey"
+            columns: ["camera_id"]
+            isOneToOne: false
+            referencedRelation: "cameras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       video_lessons: {
         Row: {
           category_id: string | null
@@ -665,23 +727,19 @@ export type Database = {
       }
     }
     Functions: {
-      admin_delete_video: {
-        Args: { p_video_id: string } | { video_id: number }
-        Returns: undefined
-      }
+      admin_delete_video:
+        | { Args: { p_video_id: string }; Returns: undefined }
+        | { Args: { video_id: number }; Returns: undefined }
       admin_insert_video: {
         Args: {
-          p_title: string
-          p_description: string
-          p_video_url: string
           p_category_id: string
+          p_description: string
+          p_title: string
+          p_video_url: string
         }
         Returns: string
       }
-      approve_user_payment: {
-        Args: { p_user_id: string }
-        Returns: undefined
-      }
+      approve_user_payment: { Args: { p_user_id: string }; Returns: undefined }
     }
     Enums: {
       stripe_order_status: "pending" | "completed" | "canceled"

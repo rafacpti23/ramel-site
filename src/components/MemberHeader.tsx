@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, User, FileText, Video, MessageSquare, LogOut, Award } from "lucide-react";
+import { Menu, User, FileText, Video, MessageSquare, LogOut, Award, Camera } from "lucide-react";
 
 const MemberHeader = () => {
   const { signOut, userProfile, isAdmin } = useAuth();
@@ -35,6 +35,9 @@ const MemberHeader = () => {
               </Link>
               <Link to="/membro/suporte" className="hover:text-ramel transition-colors">
                 Suporte
+              </Link>
+              <Link to="/membro/monitorcam" className="hover:text-ramel transition-colors">
+                MonitorCam
               </Link>
               {isAdmin && (
                 <Link to="/membro/admin" className="hover:text-ramel transition-colors">
@@ -97,6 +100,15 @@ const MemberHeader = () => {
                     >
                       <MessageSquare className="h-5 w-5" />
                       <span>Suporte</span>
+                    </Link>
+                    
+                    <Link 
+                      to="/membro/monitorcam" 
+                      className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-md transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
+                      <Camera className="h-5 w-5" />
+                      <span>MonitorCam</span>
                     </Link>
                     
                     {isAdmin && (
