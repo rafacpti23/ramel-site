@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import MemberHeader from "@/components/MemberHeader";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, Grid3x3, Grid2x2, LayoutGrid } from "lucide-react";
-import CameraPlayer from "@/components/CameraPlayer";
 
 interface Camera {
   id: string;
@@ -161,17 +161,20 @@ const MonitorCam = () => {
             <Card key={camera.id} className="glass-card overflow-hidden">
               <CardContent className="p-4">
                 <div className="aspect-video bg-secondary/20 rounded-lg mb-2 flex items-center justify-center relative overflow-hidden">
-                  <CameraPlayer
-                    url={camera.rtsp_url}
-                    name={camera.name}
+                  <video
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    muted
+                    playsInline
+                    src={camera.rtsp_url}
                     onError={(e) => {
-                      toast({
-                        title: "Erro ao carregar câmera",
-                        description: `Não foi possível carregar o stream de ${camera.name}. Verifique se a URL RTSP está acessível ou converta para HLS/WebRTC.`,
-                        variant: "destructive",
-                      });
+                      const target = e.target as HTMLVideoElement;
+                      target.style.display = 'none';
+                      target.parentElement!.innerHTML = '<div class="text-center text-muted-foreground text-sm p-4">Câmera indisponível<br/>Configure conversão RTSP para HLS/WebRTC</div>';
                     }}
-                  />
+                  >
+                    Seu navegador não suporta este formato de vídeo.
+                  </video>
                 </div>
                 <div className="space-y-1">
                   <h3 className="font-semibold text-sm truncate">{camera.name}</h3>
