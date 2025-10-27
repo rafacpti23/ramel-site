@@ -8,9 +8,9 @@ const YouTubeChannelPreview = () => {
   
   // IDs dos vídeos mais recentes do canal
   const videoIds = [
-    "wDSYj8r36I0",
-    "OhGE5zNgLXo",
-    "5R6JgV7HBH0",
+    "llZy3qay-Mg",
+    "V36l09VZYho",
+    "TwWP3O9ybSw",
   ];
 
   useEffect(() => {
@@ -34,7 +34,7 @@ const YouTubeChannelPreview = () => {
           <iframe
             width="100%"
             height="100%"
-            src={`https://www.youtube.com/watch?v=m0dOvJ62Gs4&list=PLDai3Q4XfkKoDnjSF683sPS57ogG5N6BF&index=2`}
+            src={`https://youtube.com/watch?v=${videoIds[currentVideoIndex]}?autoplay=0&mute=0`}
             title="YouTube video player"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
