@@ -11,6 +11,8 @@ const YouTubeChannelPreview = () => {
     "llZy3qay-Mg",
     "V36l09VZYho",
     "TwWP3O9ybSw",
+    "MA0WzoYaCho",
+    "JR3SiGmj7yE"
   ];
 
   useEffect(() => {
