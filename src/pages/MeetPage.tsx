@@ -7,9 +7,9 @@ const MeetPage = () => {
       <div className="h-[calc(100vh-64px)]">
         <iframe 
           allow="camera; microphone; fullscreen; display-capture; autoplay" 
-          src="https://meet.jit.si/dyadautomatik" 
+          src="https://meet.jit.si/ramel" 
           style={{ height: '100%', width: '100%', border: '0px' }}
-          title="Jitsi Meet"
+          title="Ramel Tecnologia Meet"
         />
       </div>
     </div>
