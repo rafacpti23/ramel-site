@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, MessageSquare, Users, BarChart3 } from "lucide-react";
+import { Check, MessageSquare, Users, BarChart3, MessageCircle, Send, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const ProductsSection = ({ deliveryLogoUrl }: { deliveryLogoUrl?: string }) => {
@@ -12,11 +12,63 @@ const ProductsSection = ({ deliveryLogoUrl }: { deliveryLogoUrl?: string }) => {
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Produtos Digitais</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Soluções completas para gestão, agendamento, delivery e automação de WhatsApp que transformam a operação do seu negócio.
+            Soluções completas para gestão, agendamento, delivery, CRM multicanal e automação que transformam a operação do seu negócio.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* WhatsVix - CRM de Mensagens */}
+          <Card className="glass-card overflow-hidden border-blue-500/20 h-full">
+            <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-500 pb-8">
+              <Badge className="w-fit mb-3 bg-white/20 hover:bg-white/30">WhatsVix</Badge>
+              <CardTitle className="text-xl text-white">CRM de Mensagens Multicanal</CardTitle>
+              <CardDescription className="text-white/80">
+                Centralize todos os seus atendimentos em uma única plataforma
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="p-6">
+              <div className="mb-4">
+                <h4 className="font-semibold mb-2 text-sm">Integrações:</h4>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  <Badge variant="secondary" className="text-xs">WhatsApp</Badge>
+                  <Badge variant="secondary" className="text-xs">Telegram</Badge>
+                  <Badge variant="secondary" className="text-xs">Facebook</Badge>
+                  <Badge variant="secondary" className="text-xs">Instagram</Badge>
+                  <Badge variant="outline" className="text-xs">iFood (em breve)</Badge>
+                </div>
+              </div>
+              <ul className="space-y-2 mb-4">
+                <li className="flex items-start gap-2">
+                  <Users className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
+                  <span className="text-sm">Multiatendimento simultâneo</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <MessageCircle className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
+                  <span className="text-sm">Chatbot inteligente com IA</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Zap className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
+                  <span className="text-sm">Respostas rápidas automáticas</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <BarChart3 className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
+                  <span className="text-sm">Dashboard de desempenho</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Send className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
+                  <span className="text-sm">Campanhas de marketing</span>
+                </li>
+              </ul>
+              <div className="text-right text-sm text-muted-foreground">
+                A partir de R$ 149/mês
+              </div>
+            </CardContent>
+            
+            <CardFooter>
+              <Button className="w-full bg-blue-600 hover:bg-blue-700">Em Breve</Button>
+            </CardFooter>
+          </Card>
           {/* Agenda Pro+ */}
           <Card className="glass-card overflow-hidden border-ramel/20 h-full">
             <CardHeader className="bg-gradient-to-r from-ramel-dark to-ramel pb-8">
