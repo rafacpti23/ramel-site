@@ -24,6 +24,7 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LiveChatService } from "@/services/LiveChatService";
 import AffiliationPage from "@/pages/AffiliationPage";
+import MeetPage from "@/pages/MeetPage";
 
 function App() {
   // Carrega as configurações do sistema e inicializa o chat ao carregar a aplicação
@@ -75,6 +76,7 @@ function App() {
           <Route path="/membro/admin/configuracoes" element={<SystemConfigPage />} />
           <Route path="/membro/admin/crm" element={<CrmPage />} />
           <Route path="/membro/monitorcam" element={<MonitorCam />} />
+          <Route path="/membro/meet" element={<MeetPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
