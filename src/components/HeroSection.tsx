@@ -3,9 +3,18 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Calendar } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface ClientLogo {
+  id: string;
+  name: string;
+  logo_url: string;
+  created_at: string;
+}
 
 const HeroSection = () => {
   const [scroll, setScroll] = useState(false);
+  const [clients, setClients] = useState<ClientLogo[]>([]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,6 +30,25 @@ const HeroSection = () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  const fetchClients = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('client_logos')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(4);
+
+      if (error) throw error;
+      setClients(data || []);
+    } catch (error) {
+      console.error('Erro ao carregar logos dos clientes:', error);
+    }
+  };
 
   return (
     <section className="min-h-[calc(100vh-80px)] flex items-center justify-center relative overflow-hidden">
@@ -93,15 +121,34 @@ const HeroSection = () => {
             
             <div className="flex items-center gap-6 mt-12">
               <div className="flex -space-x-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div 
-                    key={i}
-                    className="w-10 h-10 rounded-full bg-gray-400 border-2 border-background"
-                  ></div>
-                ))}
+                {clients.length > 0 ? (
+                  clients.map((client) => (
+                    <div 
+                      key={client.id}
+                      className="w-12 h-12 rounded-full border-2 border-background overflow-hidden bg-white"
+                    >
+                      <img 
+                        src={client.logo_url} 
+                        alt={client.name}
+                        className="w-full h-full object-contain p-1"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/placeholder.svg";
+                        }}
+                      />
+                    </div>
+                  ))
+                ) : (
+                  [1, 2, 3, 4].map((i) => (
+                    <div 
+                      key={i}
+                      className="w-12 h-12 rounded-full bg-gray-400 border-2 border-background"
+                    ></div>
+                  ))
+                )}
               </div>
               <div>
-                <div className="font-bold">+100 clientes</div>
+                <div className="font-bold">Vários clientes</div>
                 <div className="text-sm text-muted-foreground">confiam em nossas soluções</div>
               </div>
             </div>

@@ -1,11 +1,12 @@
 
 import { Zap } from "lucide-react";
+import YouTubeChannelPreview from "./YouTubeChannelPreview";
 
 const Footer = () => {
   return (
     <footer className="bg-secondary py-12 border-t border-white/5">
       <div className="container mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Zap className="h-6 w-6 text-ramel" />
@@ -33,6 +34,10 @@ const Footer = () => {
               <li><a href="#promocoes" className="hover:text-ramel transition-colors">Promoções</a></li>
               <li><a href="https://guard.ramelseg.com.br" className="hover:text-ramel transition-colors">Guard Monitoramento</a></li>
             </ul>
+          </div>
+          
+          <div>
+            <YouTubeChannelPreview />
           </div>
         </div>
         

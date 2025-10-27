@@ -70,6 +70,9 @@ const Navbar = () => {
           <Link to="/membro/arquivos" className="text-sm font-medium transition-colors hover:text-ramel">
             Recursos e Suporte
           </Link>
+          <Link to="/membro/meet" className="text-sm font-medium transition-colors hover:text-ramel">
+            Meet
+          </Link>
           <button 
             className="text-sm font-medium transition-colors hover:text-ramel"
             onClick={() => scrollToSection('contato')}
@@ -148,6 +151,13 @@ const Navbar = () => {
               onClick={() => setMenuOpen(false)}
             >
               Recursos e Suporte
+            </Link>
+            <Link 
+              to="/membro/meet" 
+              className="px-3 py-2 rounded-md hover:bg-white/5"
+              onClick={() => setMenuOpen(false)}
+            >
+              Meet
             </Link>
             <button 
               className="px-3 py-2 text-left rounded-md hover:bg-white/5"
